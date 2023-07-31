@@ -29,4 +29,10 @@ public class MemberController {
         memberService.registerInformation(authenticationMemberId, memberMapper.infoToMember(requestBody));
         return new ResponseEntity<>("정보 등록이 완료되었습니다.", HttpStatus.OK);
     }
+
+    @PostMapping("/displayname")
+    public ResponseEntity postDisplayNameCheck(@RequestBody MemberDto.DisplayName requestBody) {
+        memberService.checkDisplayName(requestBody);
+        return new ResponseEntity<>("사용 가능한 닉네임입니다.", HttpStatus.OK);
+    }
 }

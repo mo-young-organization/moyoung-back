@@ -18,6 +18,13 @@ public class MemberDto {
 
     @Getter
     @Setter
+    public static class DisplayName {
+        @NotBlank
+        private String displayName;
+    }
+
+    @Getter
+    @Setter
     public static class Info {
         @NotBlank
         private String displayName;

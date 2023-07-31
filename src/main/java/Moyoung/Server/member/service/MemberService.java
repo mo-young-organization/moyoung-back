@@ -2,6 +2,7 @@ package Moyoung.Server.member.service;
 
 import Moyoung.Server.exception.BusinessLogicException;
 import Moyoung.Server.exception.ExceptionCode;
+import Moyoung.Server.member.dto.MemberDto;
 import Moyoung.Server.member.entity.Member;
 import Moyoung.Server.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +46,11 @@ public class MemberService {
         Optional<Member> optionalMember = memberRepository.findById(id);
 
         return optionalMember.orElseThrow(() -> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
+    }
+
+    // 닉네임 중복 확인(닉네임만)
+    public void checkDisplayName(MemberDto.DisplayName requestBody) {
+        verifyExistingDisplayName(requestBody.getDisplayName());
     }
 
     // 로컬 회원가입 시 이메일 중복 확인
