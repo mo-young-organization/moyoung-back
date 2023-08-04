@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -21,18 +23,20 @@ public class RecruitingArticle {
     @JoinColumn(name = "member_id")
     private Member member;
     @OneToMany
-    private List<Member> participants;
+    private List<Member> participants = new ArrayList<>();
     @ManyToOne
     @JoinColumn(name = "running_time_id")
     private RunningTime runningTime;
     @OneToMany(mappedBy = "recruitingArticle")
-    private List<Chat> chats;
+    private List<Chat> chats = new ArrayList<>();
 
     private String title;
     // 참여 최대 인원
     private int maxNum;
     private Age age;
     private Gender gender;
+    private LocalDateTime createdAt;
+    private LocalDateTime modifiedAt;
 
     public void addParticipant(Member member) {
         this.participants.add(member);
