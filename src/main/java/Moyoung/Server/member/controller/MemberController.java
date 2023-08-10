@@ -32,7 +32,7 @@ public class MemberController {
 
     @PostMapping("/displayname")
     public ResponseEntity postDisplayNameCheck(@RequestBody MemberDto.DisplayName requestBody) {
-        memberService.checkDisplayName(requestBody);
-        return new ResponseEntity<>("사용 가능한 닉네임입니다.", HttpStatus.OK);
+        // true = 사용 가능, false 사용 불가 (이미 사용 중)
+        return new ResponseEntity<>(memberService.checkDisplayName(requestBody), HttpStatus.OK);
     }
 }

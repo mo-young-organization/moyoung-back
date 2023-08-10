@@ -49,8 +49,11 @@ public class MemberService {
     }
 
     // 닉네임 중복 확인(닉네임만)
-    public void checkDisplayName(MemberDto.DisplayName requestBody) {
-        verifyExistingDisplayName(requestBody.getDisplayName());
+    public boolean checkDisplayName(MemberDto.DisplayName requestBody) {
+        Optional<Member> foundMemberByDisplayName = memberRepository.findByDisplayName(requestBody.getDisplayName());
+        if (foundMemberByDisplayName.isPresent()) {
+            return false;
+        } else return true;
     }
 
     // 로컬 회원가입 시 이메일 중복 확인
