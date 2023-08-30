@@ -2,10 +2,14 @@ package Moyoung.Server.runningtime.entity;
 
 import Moyoung.Server.cinema.entity.Cinema;
 import Moyoung.Server.movie.entity.Movie;
+import lombok.Getter;
+import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
+@Getter
+@Setter
 @Entity
 public class RunningTime {
     @Id
@@ -13,6 +17,7 @@ public class RunningTime {
     private long runningTimeId;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+    private String screenInfo;
 
     @ManyToOne
     @JoinColumn(name = "cinema_id")
