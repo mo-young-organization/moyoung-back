@@ -18,6 +18,7 @@ public class RunningTime {
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private String screenInfo;
+    private Boolean earlyMorning;
 
     @ManyToOne
     @JoinColumn(name = "cinema_id")
