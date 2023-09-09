@@ -18,6 +18,9 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -66,7 +69,7 @@ public class RunningTimeCrawlerService {
                         "    \"detailType\": \"area\",\n" +
                         "    \"brchNo\": \"" + cinemaNo + "\",\n" +
                         "    \"brchNo1\": \"" + cinemaNo + "\",\n" +
-                        "    \"firstAt\": \"N\",\n" +
+                        "    \"firstAt\": \"Y\",\n" +
                         "    \"playDe\": \"" + playDateStr + "\"\n" +
                         "}";
 
@@ -88,9 +91,39 @@ public class RunningTimeCrawlerService {
                 Gson gson = new Gson();
                 MegaResponse jsonResponse = gson.fromJson(responseString, MegaResponse.class);
 
+                // 위도 경도 주소 설정
+                if (cinema.getLatitude() == 0 && cinema.getLongitude() == 0) {
+                    MegaResponse.BrchInfo brchInfo =  jsonResponse.getMegaMap().getBrchInfo();
+                    cinema.setLatitude(brchInfo.getBrchLat());
+                    cinema.setLongitude(brchInfo.getBrchLon());
+                    String address = brchInfo.getAddress();
+
+                    // 괄호 대체
+                    address = address.replace("&#40;", "(");
+                    address = address.replace("&#41;", ")");
+
+                    cinema.setAddress(address);
+
+                    cinemaRepository.save(cinema);
+                }
+
                 // RunningTime 객체 생성 및 저장
                 for (MegaResponse.MovieForm movieForm : jsonResponse.getMegaMap().getMovieFormList()) {
                     RunningTime runningTime = new RunningTime();
+
+                    String screenId = movieForm.getScreenId();
+
+                    // 괄호 대체
+                    screenId = screenId.replace("&#40;", "(");
+                    screenId = screenId.replace("&#41;", ")");
+
+                    runningTime.setScreenInfo(screenId);
+
+                    // 조조 여부
+                    if (movieForm.getPlayTyCdNm().equals("조조")) {
+                        runningTime.setEarlyMorning(true);
+                    }
+
                     String startTimeStr = movieForm.getPlayStartTime();
                     String endTimeStr = movieForm.getPlayEndTime();
                     LocalDate playStartDate = playDate;
@@ -119,6 +152,11 @@ public class RunningTimeCrawlerService {
 
                     runningTime.setCinema(cinema);
                     String movieName = movieForm.getMovieNm();
+
+                    // 괄호 대체
+                    movieName = movieName.replace("&#40;", "(");
+                    movieName = movieName.replace("&#41;", ")");
+
                     Optional<Movie> optionalMovie = movieRepository.findByName(movieName);
                     Movie movie;
                     if (optionalMovie.isPresent()) {
@@ -126,6 +164,40 @@ public class RunningTimeCrawlerService {
                     } else {
                         movie = new Movie();
                         movie.setName(movieName);
+
+                        // 관람 등급 설정
+                        movie.setMovieRating(movieForm.getAdmisClassCdNm());
+
+                        String rpstMovieNo = movieForm.getRpstMovieNo();
+                        String movieInfoUrl = "https://www.megabox.co.kr/movie-detail?rpstMovieNo=" + rpstMovieNo;
+
+                        try {
+                            // Jsoup을 사용하여 웹 페이지를 가져옴
+                            Document doc = Jsoup.connect(movieInfoUrl).get();
+
+                            // 포스터 이미지를 포함하는 HTML 요소를 선택
+                            Element posterElement = doc.selectFirst("#contents > div.movie-detail-page > div.movie-detail-cont > div.poster > div > img");
+
+                            if (posterElement != null) {
+                                // 포스터 이미지의 src 속성을 가져옴
+                                String posterImageUrl = posterElement.attr("src");
+                                movie.setThumbnailUrl(posterImageUrl);
+                            } else {
+                                System.out.println("포스터 이미지를 찾을 수 없습니다.");
+                            }
+
+                            // 영화 정보 텍스트를 가져옴
+                            Element descriptionMeta = doc.select("meta[property=description]").first();
+
+                            if (descriptionMeta != null) {
+                                String description = descriptionMeta.attr("content");
+                                movie.setInfo(description);
+                            } else {
+                                System.out.println("영화 정보를 찾을 수 없습니다.");
+                            }
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
 
                         movieRepository.save(movie);
                     }
