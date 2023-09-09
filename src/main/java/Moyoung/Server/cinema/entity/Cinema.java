@@ -12,25 +12,16 @@ public class Cinema {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long cinemaId;
+    private String brand;
+    private String code;
+    private String name;
     private String region;
-    private String cinemaName;
-    private String title;
     private String info;
-    private double dx;
-    private double dy;
-
-    @Enumerated
-    private Type type;
-
-    public enum Type {
-        CGV("CGV"),
-        MEGABOX("메가박스"),
-        LOTTECINEMA("롯데시네마");
-
-        @Getter
-        private String name;
-        Type(String name) {
-            this.name = name;
-        }
-    }
+    private String address;
+    // 위도
+    @Column(columnDefinition = "DOUBLE DEFAULT 0")
+    private double latitude;
+    // 경도
+    @Column(columnDefinition = "DOUBLE DEFAULT 0")
+    private double longitude;
 }
