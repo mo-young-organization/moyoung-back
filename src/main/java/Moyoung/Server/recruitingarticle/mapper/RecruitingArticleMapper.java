@@ -93,8 +93,6 @@ public interface RecruitingArticleMapper {
 
     default RecruitingArticleDto.ResponseForList recruitingArticleToReseponseForList(RecruitingArticle recruitingArticle) {
         RunningTime runningTime = recruitingArticle.getRunningTime();
-        Movie movie = runningTime.getMovie();
-        Cinema cinema = runningTime.getCinema();
         return RecruitingArticleDto.ResponseForList.builder()
                 .recruitingArticleId(recruitingArticle.getRecruitingArticleId())
                 .title(recruitingArticle.getTitle())
@@ -105,14 +103,6 @@ public interface RecruitingArticleMapper {
                 .runningTimeInfo(RunningTimeDto.Response.builder()
                         .runningTimeId(runningTime.getRunningTimeId())
                         .startTime(runningTime.getStartTime())
-                        .endTime(runningTime.getEndTime())
-                        .movieInfo(MovieDto.Response.builder()
-                                .movieId(movie.getMovieId())
-                                .name(movie.getName()).build())
-                        .cinemaInfo(CinemaDto.Response.builder()
-                                .cinemaId(cinema.getCinemaId())
-                                .region(cinema.getRegion())
-                                .cinemaName(cinema.getCinemaName())
-                                .type(cinema.getType().getName()).build()).build()).build();
+                        .endTime(runningTime.getEndTime()).build()).build();
     }
 }

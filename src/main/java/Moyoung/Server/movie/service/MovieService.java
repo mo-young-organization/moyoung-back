@@ -25,7 +25,7 @@ public class MovieService {
         if (page == null) page = 1;
         return movieRepository.findAllByNameContains(movieName, PageRequest.of(page - 1, 25, Sort.by("movieId").descending()));
     }
-
+  
     private Movie findVerifiedMovie(long movieId) {
         Optional<Movie> optionalMovie = movieRepository.findById(movieId);
 
