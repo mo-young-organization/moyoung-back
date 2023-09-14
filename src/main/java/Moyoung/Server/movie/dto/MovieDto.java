@@ -10,7 +10,6 @@ public class MovieDto {
         private long movieId;
         private String name;
         private String thumbnailUrl;
-        private String info;
     }
 
     @Getter
