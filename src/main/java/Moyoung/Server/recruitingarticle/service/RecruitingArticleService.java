@@ -64,6 +64,22 @@ public class RecruitingArticleService {
         recruitingArticleRepository.delete(recruitingArticle);
     }
 
+    // 게시글 참가 (발신자 확인을 위해 닉네임 반환)
+    public String enterRecruit(long recruitingArticleId, long memberId) {
+        RecruitingArticle recruitingArticle = findVerifiedRecruitingArticle(recruitingArticleId);
+        Member member = memberService.findVerifiedMember(memberId);
+
+        if (recruitingArticle.getMaxNum() - recruitingArticle.getCurrentNum() < 1) {
+            throw new BusinessLogicException(ExceptionCode.CAN_NOT_ENTER);
+        }
+        recruitingArticle.getParticipants().add(member);
+        recruitingArticle.setCurrentNum(recruitingArticle.getCurrentNum() + 1);
+
+        recruitingArticleRepository.save(recruitingArticle);
+
+        return member.getDisplayName();
+    }
+
     // 검증된 게시글 찾기
     public RecruitingArticle findVerifiedRecruitingArticle(long recruitingArticleId) {
         Optional<RecruitingArticle> optionalRecruitingArticle = recruitingArticleRepository.findById(recruitingArticleId);

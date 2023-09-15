@@ -8,6 +8,7 @@ public enum ExceptionCode {
     RECRUIT_ARTICLE_NOT_FOUND(404, "게시글을 찾을 수 없습니다"),
     UNAUTHORIZED(404, "권한이 없습니다" ),
     MOVIE_NOT_FOUND(404, "영화를 찾을 수 없습니다."),
+    CAN_NOT_ENTER(404, "최대 인원을 초과하여 입장할 수 없습니다."),
     ONLY_AUTHOR(404, "권한이 없습니다.");
     @Getter
     private int status;

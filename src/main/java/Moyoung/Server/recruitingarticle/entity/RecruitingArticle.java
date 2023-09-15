@@ -33,6 +33,7 @@ public class RecruitingArticle {
     private String title;
     // 참여 최대 인원
     private int maxNum;
+    private int currentNum;
     private Age age;
     private Gender gender;
     private LocalDateTime createdAt;
