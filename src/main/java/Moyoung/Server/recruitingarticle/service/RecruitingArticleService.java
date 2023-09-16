@@ -15,6 +15,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -78,6 +79,19 @@ public class RecruitingArticleService {
         recruitingArticleRepository.save(recruitingArticle);
 
         return member.getDisplayName();
+    }
+
+    // 게시글 퇴장
+    public void leaveSession(String recruitingArticleId, String senderDisplayName) {
+        long longRecruitingArticleId = Long.parseLong(recruitingArticleId);
+        RecruitingArticle foundRecruitingArticle = findVerifiedRecruitingArticle(longRecruitingArticleId);
+        Member member = memberService.findMemberByDisplayName(senderDisplayName);
+        List<Member> participants = foundRecruitingArticle.getParticipants();
+        participants.remove(member);
+        foundRecruitingArticle.setParticipants(participants);
+        foundRecruitingArticle.setCurrentNum(foundRecruitingArticle.getCurrentNum() - 1);
+
+        recruitingArticleRepository.save(foundRecruitingArticle);
     }
 
     // 검증된 게시글 찾기
