@@ -23,7 +23,7 @@ public class ChatDto {
 
     @Getter
     @Setter
-    public static class Enter {
+    public static class EnterExit {
         private String sender;
         private String content;
     }

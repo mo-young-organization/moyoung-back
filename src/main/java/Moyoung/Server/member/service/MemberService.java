@@ -72,6 +72,12 @@ public class MemberService {
         }
     }
 
+    // 닉네임으로 회원 찾기
+    public Member findMemberByDisplayName(String displayName) {
+        Optional<Member> foundMemberByDisplayName = memberRepository.findByDisplayName(displayName);
+        return foundMemberByDisplayName.orElseThrow(() -> new BusinessLogicException(ExceptionCode.MEMBER_NOT_FOUND));
+    }
+
     public Member findVerifiedMember (Long memberId) {
         Optional<Member> optionalMember = memberRepository.findById(memberId);
         Member findedMember = optionalMember.orElseThrow(() ->

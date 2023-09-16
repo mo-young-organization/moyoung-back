@@ -10,13 +10,16 @@ import Moyoung.Server.dto.MultiResponseDto;
 import Moyoung.Server.recruitingarticle.service.RecruitingArticleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import java.util.List;
 
@@ -31,7 +34,7 @@ public class ChatController {
     private final SimpMessageSendingOperations operations;
 
 
-    @MessageMapping("/{recruit-id}/chat/enter")
+    @MessageMapping("/recruit/{recruit-id}/chat/enter")
     public void enterMember(@PathVariable("recruit-id") long recruitId, SimpMessageHeaderAccessor headerAccessor) {
         long authenticationMemberId = JwtParseInterceptor.getAuthenticatedMemberId();
 
@@ -40,11 +43,30 @@ public class ChatController {
         String sessionId = headerAccessor.getSessionId();
         sessionService.registerSession(sessionId, sender, recruitArticleId);
 
-        ChatDto.Enter enterChat = new ChatDto.Enter();
+        ChatDto.EnterExit enterChat = new ChatDto.EnterExit();
         enterChat.setContent(sender + "님이 입장하였습니다.");
         enterChat.setSender(sender);
 
         operations.convertAndSend("/sub/recruit/" + recruitId + "/chat", enterChat);
+    }
+
+    @EventListener
+    public void exitMember(SessionDisconnectEvent event) {
+        StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
+
+        String sessionId = headerAccessor.getSessionId();
+        WebSocketSessionService.UserSessionInfo sessionInfo = sessionService.getSessionInfo(sessionId);
+        String sender = sessionInfo.getDisplayName();
+        String recruitingArticleId = sessionInfo.getRecruitingArticleId();
+
+        recruitingArticleService.leaveSession(recruitingArticleId, sender);
+        sessionService.removeSession(sessionId);
+
+        ChatDto.EnterExit exitChat = new ChatDto.EnterExit();
+        exitChat.setSender(sender);
+        exitChat.setContent(sender + "님이 퇴장하였습니다.");
+
+        operations.convertAndSend("/sub/recruit/" + recruitingArticleId + "/chat", exitChat);
     }
 
     @PostMapping("/recruit/{recruit-id}/chat")
