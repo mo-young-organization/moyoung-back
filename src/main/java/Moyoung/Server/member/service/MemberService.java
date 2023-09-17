@@ -25,13 +25,15 @@ public class MemberService {
     }
 
     // 회원 정보 등록
-    public void registerInformation(Long memberId, Member requestBody) {
+    public String registerInformation(Long memberId, Member requestBody) {
         verifyExistingDisplayName(requestBody.getDisplayName());
         Member member = findVerifiedMember(memberId);
         member.setDisplayName(requestBody.getDisplayName());
         member.setGender(requestBody.isGender());
         member.setAge(requestBody.getAge());
         memberRepository.save(member);
+
+        return member.getDisplayName();
     }
 
     // 오어스 회원 가입

@@ -20,9 +20,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -82,32 +85,35 @@ public class OAuth2MemberSuccessHandler extends SimpleUrlAuthenticationSuccessHa
         String uri;
 
         if (member.getDisplayName() == null) {
-            uri = createInterestUri(accessToken, refreshToken, member.getMemberId(), member.getDisplayName(), accessTokenExpirationFormatted, refreshTokenExpirationFormatted).toString();
+            uri = createInterestUri(false, accessToken, refreshToken, member.getMemberId(), accessTokenExpirationFormatted, refreshTokenExpirationFormatted).toString();
         } else {
-            uri = createUri(accessToken, refreshToken, member.getMemberId(), member.getDisplayName(), accessTokenExpirationFormatted, refreshTokenExpirationFormatted).toString();
+            uri = createUri(true, accessToken, refreshToken, member.getMemberId(), member.getDisplayName(), accessTokenExpirationFormatted, refreshTokenExpirationFormatted).toString();
         }
+
+
         getRedirectStrategy().sendRedirect(request, response, uri);
     }
 
     // 콜백 Uri
-    private URI createUri(String accessToken, String refreshToken, long memberId, String displayName, String accessTokenExpiration, String refreshTokenExpiration) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("http://localhost:5173/callback/true")
+    private URI createUri(boolean userInfoCheck, String accessToken, String refreshToken, long memberId, String displayName, String accessTokenExpiration, String refreshTokenExpiration) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("http://localhost:5173/callback")
+                .queryParam("user", userInfoCheck)
                 .queryParam("Authorization", accessToken)
                 .queryParam("Refresh", refreshToken)
                 .queryParam("memberId", memberId)
-                .queryParam("displayName", displayName)
+                .queryParam("displayName", URLEncoder.encode(displayName, UTF_8))
                 .queryParam("accessTokenExpiration", accessTokenExpiration)
                 .queryParam("refreshTokenExpiration", refreshTokenExpiration);
         return builder.build().toUri();
     }
 
-    // 콜백 Uri(회원 정보 등록 필요)
-    private URI createInterestUri(String accessToken, String refreshToken, long memberId, String displayName, String accessTokenExpiration, String refreshTokenExpiration) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("http://localhost:5173/callback/false")
+    // 콜백 Uri
+    private URI createInterestUri(boolean userInfoCheck, String accessToken, String refreshToken, long memberId, String accessTokenExpiration, String refreshTokenExpiration) {
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("http://localhost:5173/callback")
+                .queryParam("user", userInfoCheck)
                 .queryParam("Authorization", accessToken)
                 .queryParam("Refresh", refreshToken)
                 .queryParam("memberId", memberId)
-                .queryParam("displayName", displayName)
                 .queryParam("accessTokenExpiration", accessTokenExpiration)
                 .queryParam("refreshTokenExpiration", refreshTokenExpiration);
         return builder.build().toUri();
