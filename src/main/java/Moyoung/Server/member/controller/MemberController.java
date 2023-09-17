@@ -7,6 +7,7 @@ import Moyoung.Server.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,14 +25,14 @@ public class MemberController {
     }
 
     @PostMapping("/info")
-    public ResponseEntity postInformation(@RequestBody MemberDto.Info requestBody) {
+    public ResponseEntity postInformation(@Validated @RequestBody MemberDto.Info requestBody) {
         long authenticationMemberId = JwtParseInterceptor.getAuthenticatedMemberId();
-        memberService.registerInformation(authenticationMemberId, memberMapper.infoToMember(requestBody));
-        return new ResponseEntity<>("정보 등록이 완료되었습니다.", HttpStatus.OK);
+        String displayName = memberService.registerInformation(authenticationMemberId, memberMapper.infoToMember(requestBody));
+        return new ResponseEntity<>(displayName, HttpStatus.OK);
     }
 
     @PostMapping("/displayname")
-    public ResponseEntity postDisplayNameCheck(@RequestBody MemberDto.DisplayName requestBody) {
+    public ResponseEntity postDisplayNameCheck(@Validated @RequestBody MemberDto.DisplayName requestBody) {
         // true = 사용 가능, false 사용 불가 (이미 사용 중)
         return new ResponseEntity<>(memberService.checkDisplayName(requestBody), HttpStatus.OK);
     }

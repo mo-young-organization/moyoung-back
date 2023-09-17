@@ -11,7 +11,7 @@ public interface MemberMapper {
         int age = requestBody.getAge();
         Member member = new Member();
         member.setDisplayName(requestBody.getDisplayName());
-        member.setGender(requestBody.isGender());
+        member.setGender(requestBody.getGender());
 
         switch (age) {
             case 1:
