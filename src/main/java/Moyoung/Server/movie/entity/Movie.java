@@ -3,10 +3,9 @@ package Moyoung.Server.movie.entity;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -18,5 +17,18 @@ public class Movie {
     private String name;
     private String thumbnailUrl;
     private String movieRating;
+    @Column(length = 1500)
     private String info;
+    private String releaseDate;
+    private String genre;
+    private String runningTime;
+    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL)
+    List<MovieRank> movieRanks = new ArrayList<>();
+
+    public void addMovieRank(MovieRank movieRank) {
+        this.movieRanks.add(movieRank);
+        if (movieRank.getMovie() != this) {
+            movieRank.setMovie(this);
+        }
+    }
 }
