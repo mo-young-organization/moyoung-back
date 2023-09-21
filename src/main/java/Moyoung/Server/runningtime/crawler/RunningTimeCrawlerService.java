@@ -3,6 +3,8 @@ package Moyoung.Server.runningtime.crawler;
 import Moyoung.Server.cinema.entity.Cinema;
 import Moyoung.Server.cinema.repository.CinemaRepository;
 import Moyoung.Server.movie.entity.Movie;
+import Moyoung.Server.movie.entity.MovieRank;
+import Moyoung.Server.movie.repository.MovieRankRepository;
 import Moyoung.Server.movie.repository.MovieRepository;
 import Moyoung.Server.runningtime.entity.RunningTime;
 import Moyoung.Server.runningtime.repository.RunningTimeRepository;
@@ -12,6 +14,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -21,7 +24,9 @@ import org.apache.http.util.EntityUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -36,10 +41,66 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class RunningTimeCrawlerService {
+
+    @Value("${crawler.key}")
+    private String KEY;
+
     private final CinemaRepository cinemaRepository;
     private final MovieRepository movieRepository;
+    private final MovieRankRepository movieRankRepository;
     private final RunningTimeRepository runningTimeRepository;
 
+    public void insertMovieRank() throws IOException {
+        // 당일 날짜는 정보가 없기 때문에 전일로 진행
+        LocalDate date = LocalDate.now().minusDays(1);
+
+        // 날짜 포맷 지정 (yyyyMMdd 형식으로)
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String dateStr = date.format(formatter);
+
+        try {
+            CloseableHttpClient httpClient = HttpClients.createDefault();
+
+
+
+            String url = UriComponentsBuilder.fromUriString("http://www.kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.json")
+                    .queryParam("key", KEY)
+                    .queryParam("targetDt", dateStr)
+                    .queryParam("itemPerPage", 5).build().toString();
+
+            // Get 요청 생성
+            HttpGet httpGet = new HttpGet(url);
+
+            // 요청 보내기
+            CloseableHttpResponse response = httpClient.execute(httpGet);
+
+            // 응답 받기
+            HttpEntity responseEntity = response.getEntity();
+            String responseString = EntityUtils.toString(responseEntity);
+
+            // Gson을 사용하여 JSON 파싱
+            Gson gson = new Gson();
+            RankResponse jsonResponse = gson.fromJson(responseString, RankResponse.class);
+
+            if (jsonResponse != null) {
+                RankResponse.DailyBoxOffice[] dailyBoxOffices = jsonResponse.getBoxOfficeResult().getDailyBoxOfficeList();
+
+                for (int i = 0; i < dailyBoxOffices.length; i++) {
+                    MovieRank movieRank = new MovieRank();
+                    movieRank.setDate(date);
+                    movieRank.setMovieRank(i + 1);
+
+                    Movie movie = movieRepository.findAllByNameContains(dailyBoxOffices[i].getMovieNm()).get(0);
+                    movieRank.setMovie(movie);
+
+                    movieRankRepository.save(movieRank);
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     public void crawlMegaBox() throws IOException {
         try {
             List<Cinema> megaCinemaList = cinemaRepository.findAllByBrand("Mega");
@@ -157,6 +218,10 @@ public class RunningTimeCrawlerService {
                     movieName = movieName.replace("&#40;", "(");
                     movieName = movieName.replace("&#41;", ")");
 
+                    // 대괄호 및 대괄호 내용 삭제
+                    movieName = movieName.replaceAll("\\[.*?\\]", "");
+                    movieName = movieName.trim();
+
                     Optional<Movie> optionalMovie = movieRepository.findByName(movieName);
                     Movie movie;
                     if (optionalMovie.isPresent()) {
@@ -195,6 +260,46 @@ public class RunningTimeCrawlerService {
                             } else {
                                 System.out.println("영화 정보를 찾을 수 없습니다.");
                             }
+
+                            // 검색을 위한 영화이름 전처리
+                            if (movieName.startsWith("(") || movieName.startsWith("[")) {
+                                int endIndex = -1;
+                                if (movieName.indexOf(")") >= 0) {
+                                    endIndex = movieName.indexOf(")");
+                                } else if (movieName.indexOf("]") >= 0) {
+                                    endIndex = movieName.indexOf("]");
+                                }
+
+                                // 괄호 또는 대괄호 다음의 빈 칸 제거
+                                if (endIndex >= 0) {
+                                    movieName = movieName.substring(endIndex + 1).trim();
+                                }
+                            }
+
+                            String movieInfoUrl2 = UriComponentsBuilder.fromUriString("http://www.kobis.or.kr/kobisopenapi/webservice/rest/movie/searchMovieList.json")
+                                    .queryParam("key", KEY)
+                                    .queryParam("curPage", 1)
+                                    .queryParam("itemPerPage", 1)
+                                    .queryParam("movieNm", movieName).build().toString();
+
+                            HttpGet httpGet = new HttpGet(movieInfoUrl2);
+
+                            // 요청 보내기
+                            response = httpClient.execute(httpGet);
+
+                            // 응답 받기
+                            responseEntity = response.getEntity();
+                            responseString = EntityUtils.toString(responseEntity);
+
+                            InfoResponse infoResponse = gson.fromJson(responseString, InfoResponse.class);
+
+                            if (infoResponse != null) {
+                                InfoResponse.MovieInfo movieInfo = infoResponse.getMovieListResult().getMovieList()[0];
+
+                                movie.setGenre(movieInfo.getGenre());
+                                movie.setReleaseDate(movieInfo.getReleaseDate());
+                            }
+
                         } catch (Exception e) {
                             e.printStackTrace();
                         }

@@ -5,10 +5,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface MovieRepository extends JpaRepository<Movie, Long> {
     Optional<Movie> findByName(String name);
-
+    List<Movie> findAllByNameContains(String name);
     Page<Movie> findAllByNameContains(String name, Pageable pageable);
 }
