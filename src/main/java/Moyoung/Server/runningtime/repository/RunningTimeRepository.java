@@ -9,5 +9,17 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface RunningTimeRepository extends JpaRepository<RunningTime, Long> {
-    List<RunningTime> findRunningTimesByCinemaAndMovieAndStartTimeBetween(Cinema cinema, Movie movie, LocalDateTime startOfDate, LocalDateTime endOfDate);
+
+    List<RunningTime> findRunningTimesByCinemaAndMovieAndStartTimeBetween(
+            Cinema cinema,
+            Movie movie,
+            LocalDateTime startOfDate,
+            LocalDateTime endOfDate);
+    List<RunningTime> findRunningTimesByCinemaAndMovieAndStartTimeBetweenAndEarlyMorning(
+            Cinema cinema,
+            Movie movie,
+            LocalDateTime startOfDate,
+            LocalDateTime endOfDate,
+            boolean early
+    );
 }

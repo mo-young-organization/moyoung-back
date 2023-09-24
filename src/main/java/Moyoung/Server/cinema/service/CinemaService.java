@@ -19,9 +19,9 @@ public class CinemaService {
     private final CinemaRepository cinemaRepository;
     private final RunningTimeService runningTimeService;
 
-    public List<CinemaPlus> find(double latitude, double longitude, double distance, Movie movie, LocalDate date) {
+    public List<CinemaPlus> find(double latitude, double longitude, double distance, boolean mega, boolean lotte, boolean cgv, boolean early, Movie movie, LocalDate date) {
         List<CinemaPlus> cinemaPlusList = new ArrayList<>();
-        List<Cinema> cinemaList = cinemaRepository.findCinemasWithinDistance(latitude, longitude, distance);
+        List<Cinema> cinemaList = cinemaRepository.findCinemasWithinDistanceAndFilter(latitude, longitude, distance, mega, lotte, cgv);
 
         for (Cinema cinema : cinemaList) {
             CinemaPlus cinemaPlus = new CinemaPlus(
@@ -35,7 +35,7 @@ public class CinemaService {
 
             List<CinemaPlus.ScreenInfo> screenInfoList = new ArrayList<>();
 
-            List<RunningTime> runningTimeList = runningTimeService.find(cinema, movie, date);
+            List<RunningTime> runningTimeList = runningTimeService.find(cinema, movie, early, date);
 
             for (RunningTime runningTime : runningTimeList) {
                 boolean found = false;
