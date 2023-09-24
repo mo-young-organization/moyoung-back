@@ -1,4 +1,4 @@
-package Moyoung.Server.runningtime.crawler;
+package Moyoung.Server.crawler.response;
 
 import com.google.gson.annotations.SerializedName;
 import lombok.Getter;
