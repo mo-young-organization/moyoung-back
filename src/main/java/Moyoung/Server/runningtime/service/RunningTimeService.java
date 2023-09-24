@@ -19,11 +19,12 @@ import java.util.Optional;
 public class RunningTimeService {
     private final RunningTimeRepository runningTimeRepository;
 
-    public List<RunningTime> find(Cinema cinema, Movie movie, LocalDate date) {
+    public List<RunningTime> find(Cinema cinema, Movie movie, boolean early, LocalDate date) {
         LocalDateTime startOfDate = date.atStartOfDay();
         LocalDateTime endOfDate = date.atTime(23, 59, 59);
 
-        return runningTimeRepository.findRunningTimesByCinemaAndMovieAndStartTimeBetween(cinema, movie, startOfDate, endOfDate);
+        if (early) return runningTimeRepository.findRunningTimesByCinemaAndMovieAndStartTimeBetweenAndEarlyMorning(cinema, movie, startOfDate, endOfDate, true);
+        else return runningTimeRepository.findRunningTimesByCinemaAndMovieAndStartTimeBetween(cinema, movie, startOfDate, endOfDate);
     }
 
     public RunningTime findVerifiedRunningTime(long runningTimeId) {

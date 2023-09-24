@@ -10,6 +10,12 @@ import java.util.List;
 public interface CinemaRepository extends JpaRepository<Cinema, Long> {
     List<Cinema> findAllByBrand(String brand);
 
-    @Query("SELECT c FROM Cinema c WHERE ST_DISTANCE_SPHERE(POINT(c.longitude, c.latitude), POINT(:longitude, :latitude)) <= :distance")
-    List<Cinema> findCinemasWithinDistance(@Param("latitude") double latitude, @Param("longitude") double longitude, @Param("distance") double distance);
+@Query("SELECT c FROM Cinema c WHERE ST_DISTANCE_SPHERE(POINT(c.longitude, c.latitude), POINT(:longitude, :latitude)) <= :distance " +
+        "AND ((:mega = true AND c.brand = 'mega') OR (:lotte = true AND c.brand = 'lotte') OR (:cgv = true AND c.brand = 'cgv') OR (:mega = false AND :lotte = false AND :cgv = false))")
+List<Cinema> findCinemasWithinDistanceAndFilter(@Param("latitude") double latitude,
+                                                @Param("longitude") double longitude,
+                                                @Param("distance") double distance,
+                                                @Param("mega") boolean mega,
+                                                @Param("lotte") boolean lotte,
+                                                @Param("cgv") boolean cgv);
 }

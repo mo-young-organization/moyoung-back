@@ -27,10 +27,15 @@ public class CinemaController {
     public ResponseEntity getNearCinema(@RequestParam double latitude,
                                         @RequestParam double longitude,
                                         @RequestParam double distance,
+                                        @RequestParam(required = false) boolean mega,
+                                        @RequestParam(required = false) boolean lotte,
+                                        @RequestParam(required = false) boolean cgv,
+                                        @RequestParam(required = false) boolean early,
                                         @RequestParam long movieId,
                                         @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
         Movie movie = movieService.findMovie(movieId);
-        List<CinemaPlus> cinemaPlusList = cinemaService.find(latitude, longitude, distance, movie, date);
+        List<CinemaPlus> cinemaPlusList = cinemaService
+                .find(latitude, longitude, distance, mega, lotte, cgv, early, movie, date);
 
         return new ResponseEntity(cinemaMapper.cinemaPlusListToNearResponse(movie, cinemaPlusList), HttpStatus.OK);
     }
