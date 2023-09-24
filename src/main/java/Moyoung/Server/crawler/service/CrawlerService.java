@@ -1,7 +1,11 @@
-package Moyoung.Server.runningtime.crawler;
+package Moyoung.Server.crawler.service;
 
 import Moyoung.Server.cinema.entity.Cinema;
 import Moyoung.Server.cinema.repository.CinemaRepository;
+import Moyoung.Server.crawler.response.InfoResponse;
+import Moyoung.Server.crawler.response.LotteResponse;
+import Moyoung.Server.crawler.response.MegaResponse;
+import Moyoung.Server.crawler.response.RankResponse;
 import Moyoung.Server.movie.entity.Movie;
 import Moyoung.Server.movie.entity.MovieRank;
 import Moyoung.Server.movie.repository.MovieRankRepository;
@@ -40,7 +44,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class RunningTimeCrawlerService {
+public class CrawlerService {
 
     @Value("${crawler.key}")
     private String KEY;
