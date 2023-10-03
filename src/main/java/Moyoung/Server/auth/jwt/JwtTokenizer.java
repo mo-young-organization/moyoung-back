@@ -1,5 +1,7 @@
 package Moyoung.Server.auth.jwt;
 
+import Moyoung.Server.exception.BusinessLogicException;
+import Moyoung.Server.exception.ExceptionCode;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
@@ -78,6 +80,13 @@ public class JwtTokenizer {
                 .setSigningKey(key)
                 .build()
                 .parseClaimsJws(jws);
+    }
+
+    public boolean validateToken(String token){
+        if(getClaims(token,encodeBase64SecretKey(secretKey)) == null){
+            throw new BusinessLogicException(ExceptionCode.NOT_LOGIN);
+        }
+        else return true;
     }
 
     public Date getTokenExpiration(int expirationMinutes) {
