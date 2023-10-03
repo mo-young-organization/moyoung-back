@@ -18,9 +18,8 @@ public interface ChatMapper {
         RecruitingArticle recruitingArticle = new RecruitingArticle();
         recruitingArticle.setRecruitingArticleId(recruitArticleId);
         Chat chat = new Chat();
-        chat.setSender(member);
         chat.setRecruitingArticle(recruitingArticle);
-        chat.setChatTime(LocalDateTime.now());
+        chat.setCreatedAt(LocalDateTime.now());
         chat.setContent(requestBody.getContent());
 
         return chat;
@@ -33,11 +32,9 @@ public interface ChatMapper {
     }
 
     default ChatDto.Response chatToResponseForList(Chat chat) {
-        Member sender = chat.getSender();
         return ChatDto.Response.builder()
-                .senderId(sender.getMemberId())
-                .displayName(sender.getDisplayName())
-                .chatTime(chat.getChatTime())
+                .displayName(chat.getSender())
+                .chatTime(chat.getCreatedAt())
                 .content(chat.getContent()).build();
     }
 }

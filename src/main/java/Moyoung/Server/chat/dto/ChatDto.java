@@ -12,6 +12,13 @@ public class ChatDto {
         private String content;
     }
 
+    @Setter
+    @Getter
+    public static class NewChats {
+        private int chatsCount;
+        private long recruitingArticleId;
+    }
+
     @Getter
     @Builder
     public static class Response {

@@ -37,6 +37,6 @@ public class MovieDto {
     public static class Rank {
         private int rank;
         private String name;
-        private String thumbnailRul;
+        private String thumbnailUrl;
     }
 }

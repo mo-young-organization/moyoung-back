@@ -14,6 +14,8 @@ import org.springframework.context.event.EventListener;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
@@ -34,20 +36,27 @@ public class ChatController {
     private final SimpMessageSendingOperations operations;
 
 
-    @MessageMapping("/recruit/{recruit-id}/chat/enter")
-    public void enterMember(@PathVariable("recruit-id") long recruitId, SimpMessageHeaderAccessor headerAccessor) {
+//    @MessageMapping("/recruit/{recruit-id}/chat/enter")
+//    public void enterMember(@PathVariable("recruit-id") long recruitId, SimpMessageHeaderAccessor headerAccessor) {
+//        long authenticationMemberId = JwtParseInterceptor.getAuthenticatedMemberId();
+//
+//        String sender = recruitingArticleService.enterRecruit(recruitId, authenticationMemberId);
+//        String recruitArticleId = String.valueOf(recruitId);
+//        String sessionId = headerAccessor.getSessionId();
+//        sessionService.registerSession(sessionId, sender, recruitArticleId);
+//
+//        ChatDto.EnterExit enterChat = new ChatDto.EnterExit();
+//        enterChat.setContent(sender + "님이 입장하였습니다.");
+//        enterChat.setSender(sender);
+//
+//        operations.convertAndSend("/sub/recruit/" + recruitId + "/chat", enterChat);
+//    }
+
+    @MessageMapping("/recruit/{recruit-id}")
+    public void talk(@DestinationVariable(value = "recruit-id") Long recruitArticleId, Chat chat) {
         long authenticationMemberId = JwtParseInterceptor.getAuthenticatedMemberId();
 
-        String sender = recruitingArticleService.enterRecruit(recruitId, authenticationMemberId);
-        String recruitArticleId = String.valueOf(recruitId);
-        String sessionId = headerAccessor.getSessionId();
-        sessionService.registerSession(sessionId, sender, recruitArticleId);
-
-        ChatDto.EnterExit enterChat = new ChatDto.EnterExit();
-        enterChat.setContent(sender + "님이 입장하였습니다.");
-        enterChat.setSender(sender);
-
-        operations.convertAndSend("/sub/recruit/" + recruitId + "/chat", enterChat);
+        chatService.SendChat(authenticationMemberId, recruitArticleId, chat);
     }
 
     @EventListener
@@ -60,7 +69,7 @@ public class ChatController {
         String recruitingArticleId = sessionInfo.getRecruitingArticleId();
 
         recruitingArticleService.leaveSession(recruitingArticleId, sender);
-        sessionService.removeSession(sessionId);
+//        sessionService.removeSession(sessionId);
 
         ChatDto.EnterExit exitChat = new ChatDto.EnterExit();
         exitChat.setSender(sender);
@@ -74,7 +83,7 @@ public class ChatController {
                                    @RequestBody ChatDto.Post requestBody) {
         long authenticationMemberId = JwtParseInterceptor.getAuthenticatedMemberId();
 
-        chatService.SendChat(chatMapper.postToChat(requestBody, authenticationMemberId, recruitArticleId));
+//        chatService.SendChat(chatMapper.postToChat(requestBody, authenticationMemberId, recruitArticleId));
         return new ResponseEntity<>(HttpStatus.OK);
     }
 

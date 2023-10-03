@@ -1,10 +1,13 @@
 package Moyoung.Server.recruitingarticle.entity;
 
 import Moyoung.Server.chat.entity.Chat;
+import Moyoung.Server.chat.entity.ChatRoomMembersInfo;
 import Moyoung.Server.member.entity.Member;
 import Moyoung.Server.runningtime.entity.RunningTime;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
+import net.minidev.json.annotate.JsonIgnore;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -22,8 +25,9 @@ public class RecruitingArticle {
     @ManyToOne
     @JoinColumn(name = "member_id")
     private Member member;
-    @OneToMany
-    private List<Member> participants = new ArrayList<>();
+    @JsonManagedReference // 무한 재귀 방지
+    @OneToMany(mappedBy = "recruitingArticle", cascade = CascadeType.ALL)
+    private List<ChatRoomMembersInfo> participants = new ArrayList<>();
     @ManyToOne
     @JoinColumn(name = "running_time_id")
     private RunningTime runningTime;
@@ -38,10 +42,9 @@ public class RecruitingArticle {
     private Gender gender;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
+    private String lastChat;
+    private LocalDateTime lastChatCreated;
 
-    public void addParticipant(Member member) {
-        this.participants.add(member);
-    }
     public enum Age {
         TEENAGER("10대"),
         TWENTIES("20대"),

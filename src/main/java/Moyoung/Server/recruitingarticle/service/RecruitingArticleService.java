@@ -1,5 +1,10 @@
 package Moyoung.Server.recruitingarticle.service;
 
+import Moyoung.Server.chat.dto.ChatDto;
+import Moyoung.Server.chat.entity.Chat;
+import Moyoung.Server.chat.entity.ChatRoomMembersInfo;
+import Moyoung.Server.chat.repository.ChatRepository;
+import Moyoung.Server.chat.repository.ChatRoomMembersInfoRepository;
 import Moyoung.Server.exception.BusinessLogicException;
 import Moyoung.Server.exception.ExceptionCode;
 import Moyoung.Server.member.entity.Member;
@@ -12,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -24,13 +30,15 @@ public class RecruitingArticleService {
     private final RecruitingArticleRepository recruitingArticleRepository;
     private final MemberService memberService;
     private final RunningTimeService runningTimeService;
+    private final ChatRepository chatRepository;
+    private final ChatRoomMembersInfoRepository chatRoomMembersInfoRepository;
+    private final SimpMessageSendingOperations sendingOperations;
 
     // 게시글 등록
     public void registerRecruitingArticle(RecruitingArticle recruitingArticle, long memberId) {
         Member member = memberService.findVerifiedMember(memberId);
         RunningTime runningTime = runningTimeService.findVerifiedRunningTime(recruitingArticle.getRunningTime().getRunningTimeId());
         recruitingArticle.setMember(member);
-        recruitingArticle.addParticipant(member);
         recruitingArticle.setRunningTime(runningTime);
         recruitingArticleRepository.save(recruitingArticle);
     }
@@ -66,19 +74,65 @@ public class RecruitingArticleService {
     }
 
     // 게시글 참가 (발신자 확인을 위해 닉네임 반환)
-    public String enterRecruit(long recruitingArticleId, long memberId) {
+    public List<ChatRoomMembersInfo> enterRecruit(long recruitingArticleId, long memberId) {
         RecruitingArticle recruitingArticle = findVerifiedRecruitingArticle(recruitingArticleId);
         Member member = memberService.findVerifiedMember(memberId);
 
-        if (recruitingArticle.getMaxNum() - recruitingArticle.getCurrentNum() < 1) {
-            throw new BusinessLogicException(ExceptionCode.CAN_NOT_ENTER);
-        }
-        recruitingArticle.getParticipants().add(member);
-        recruitingArticle.setCurrentNum(recruitingArticle.getCurrentNum() + 1);
+        if (chatRoomMembersInfoRepository.findByMemberMemberIdAndRecruitingArticleRecruitingArticleId(memberId, recruitingArticleId).isEmpty()) {
+            if (recruitingArticle.getMaxNum() == recruitingArticle.getCurrentNum()) {
+                throw new BusinessLogicException(ExceptionCode.CAN_NOT_ENTER);
+            }
 
-        recruitingArticleRepository.save(recruitingArticle);
+            recruitingArticle.setCurrentNum(recruitingArticle.getCurrentNum() + 1);
+            recruitingArticleRepository.save(recruitingArticle);
+            List<Chat> chats = chatRepository.findByRecruitingArticleRecruitingArticleId(recruitingArticleId);
+            ChatRoomMembersInfo chatRoomMembersInfo = new ChatRoomMembersInfo();
+            chatRoomMembersInfo.setMember(member);
+            chatRoomMembersInfo.setRecruitingArticle(recruitingArticle);
+            chatRoomMembersInfo.setUnreadMessageCount(0);
+            if (chats.size() > 0) {
+                chatRoomMembersInfo.setLastMessageId(chats.get(chats.size() - 1).getChatId());
+            } else {
+                chatRoomMembersInfo.setLastMessageId(0L);
+            }
+            chatRoomMembersInfoRepository.save(chatRoomMembersInfo);
+            recruitingArticle.setParticipants(chatRoomMembersInfoRepository.findByRecruitingArticleRecruitingArticleId(recruitingArticleId));
 
-        return member.getDisplayName();
+            Chat chat = new Chat();
+            chat.setSender(member.getDisplayName());
+            chat.setRecruitingArticle(recruitingArticle);
+            chat.setType(Chat.ContentType.ENTER);
+            chat.setContent("[알림] " + member.getDisplayName() + "님이 입장하셨습니다.");
+
+            Chat savedChat = chatRepository.save(chat);
+            sendingOperations.convertAndSend("/receive/chat/" + recruitingArticleId, savedChat);
+
+            return chatRoomMembersInfoRepository.findByRecruitingArticleRecruitingArticleId(recruitingArticleId);
+        } else if (chatRoomMembersInfoRepository.findByMemberMemberIdAndRecruitingArticleRecruitingArticleId(memberId, recruitingArticleId).isPresent()) {
+            List<Chat> chatList = chatRepository.findByRecruitingArticleRecruitingArticleId(recruitingArticleId);
+            ChatRoomMembersInfo chatRoomMembersInfo = chatRoomMembersInfoRepository.findByMemberMemberIdAndRecruitingArticleRecruitingArticleId(memberId, recruitingArticleId).get();
+            Long count = chatRoomMembersInfo.getLastMessageId();
+
+            for (int i = 0; i < chatList.size(); i++) {
+                Chat currentChat = chatList.get(i);
+                if (currentChat.getChatId() > count) {
+                    if (currentChat.getUnreadCount() != 0) {
+                        currentChat.setUnreadCount(currentChat.getUnreadCount() - 1);
+                        chatRepository.save(currentChat);
+                    }
+                }
+                if (i == chatList.size() - 1) {
+                    chatRoomMembersInfo.setLastMessageId(currentChat.getChatId());
+                }
+            }
+            chatRoomMembersInfoRepository.save(chatRoomMembersInfo);
+            sendingOperations.convertAndSend("/receive/chat/" + recruitingArticleId, Chat.builder()
+                    .sender(member.getDisplayName())
+                    .content("")
+                    .type(Chat.ContentType.REENTER)
+                    .build());
+            return chatRoomMembersInfoRepository.findByRecruitingArticleRecruitingArticleId(recruitingArticleId);
+        } else throw new BusinessLogicException(ExceptionCode.UNAUTHORIZED);
     }
 
     // 게시글 퇴장
@@ -86,9 +140,6 @@ public class RecruitingArticleService {
         long longRecruitingArticleId = Long.parseLong(recruitingArticleId);
         RecruitingArticle foundRecruitingArticle = findVerifiedRecruitingArticle(longRecruitingArticleId);
         Member member = memberService.findMemberByDisplayName(senderDisplayName);
-        List<Member> participants = foundRecruitingArticle.getParticipants();
-        participants.remove(member);
-        foundRecruitingArticle.setParticipants(participants);
         foundRecruitingArticle.setCurrentNum(foundRecruitingArticle.getCurrentNum() - 1);
 
         recruitingArticleRepository.save(foundRecruitingArticle);
