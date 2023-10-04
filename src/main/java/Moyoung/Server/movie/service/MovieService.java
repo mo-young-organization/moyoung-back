@@ -28,7 +28,7 @@ public class MovieService {
 
     public Page<Movie> findMoviesByName(String movieName, Integer page) {
         if (page == null) page = 1;
-        return movieRepository.findAllByNameContains(movieName, PageRequest.of(page - 1, 25, Sort.by("movieId").descending()));
+        return movieRepository.findAllByNameContainsAndLastAddedAtAfter(movieName, LocalDate.now(), PageRequest.of(page - 1, 25, Sort.by("movieId").descending()));
     }
 
     public List<MovieRank> findMovieRankByDate(LocalDate date) {
