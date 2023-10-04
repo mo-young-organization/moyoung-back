@@ -230,9 +230,17 @@ public class CrawlerService {
                     Movie movie;
                     if (optionalMovie.isPresent()) {
                         movie = optionalMovie.get();
+
+                        // 상영 날짜 갱신
+                        if (movie.getLastAddedAt() == null || !movie.getLastAddedAt().equals(playDate)) {
+                            movie.setLastAddedAt(playDate);
+                            movieRepository.save(movie);
+                        }
+
                     } else {
                         movie = new Movie();
                         movie.setName(movieName);
+                        movie.setLastAddedAt(playDate);
 
                         // 관람 등급 설정
                         movie.setMovieRating(movieForm.getAdmisClassCdNm());
