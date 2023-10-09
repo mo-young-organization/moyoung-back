@@ -44,4 +44,8 @@ public class JwtUtils {
             throw new JwtException("유효하지 않은 토큰입니다.");
         }
     }
+
+    public void validateToken(String token) {
+        jwtTokenizer.validateToken(token);
+    }
 }

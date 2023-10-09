@@ -19,15 +19,15 @@ public class RecruitingArticle {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long recruitingArticleId;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "member_id")
     private Member member;
-    @OneToMany
+    @OneToMany(fetch = FetchType.LAZY)
     private List<Member> participants = new ArrayList<>();
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "running_time_id")
     private RunningTime runningTime;
-    @OneToMany(mappedBy = "recruitingArticle")
+    @OneToMany(mappedBy = "recruitingArticle", fetch = FetchType.LAZY)
     private List<Chat> chats = new ArrayList<>();
 
     private String title;
@@ -38,6 +38,12 @@ public class RecruitingArticle {
     private Gender gender;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
+
+    // 추가 정보 비정규화
+    private String cinemaRegion;
+    private String cinemaName;
+    private String movieName;
+    private String movieThumbnailUrl;
 
     public void addParticipant(Member member) {
         this.participants.add(member);

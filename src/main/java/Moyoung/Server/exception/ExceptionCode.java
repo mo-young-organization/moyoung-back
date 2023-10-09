@@ -9,6 +9,7 @@ public enum ExceptionCode {
     UNAUTHORIZED(404, "권한이 없습니다" ),
     MOVIE_NOT_FOUND(404, "영화를 찾을 수 없습니다."),
     CAN_NOT_ENTER(404, "최대 인원을 초과하여 입장할 수 없습니다."),
+    NOT_LOGIN(402, "로그인이 필요한 서비스 입니다."),
     ONLY_AUTHOR(404, "권한이 없습니다.");
     @Getter
     private int status;

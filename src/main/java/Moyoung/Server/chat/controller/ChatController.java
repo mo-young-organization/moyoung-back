@@ -60,7 +60,7 @@ public class ChatController {
         String recruitingArticleId = sessionInfo.getRecruitingArticleId();
 
         recruitingArticleService.leaveSession(recruitingArticleId, sender);
-        sessionService.removeSession(sessionId);
+//        sessionService.removeSession(sessionId);
 
         ChatDto.EnterExit exitChat = new ChatDto.EnterExit();
         exitChat.setSender(sender);

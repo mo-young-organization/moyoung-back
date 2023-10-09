@@ -1,9 +1,11 @@
 package Moyoung.Server.recruitingarticle.service;
 
+import Moyoung.Server.cinema.entity.Cinema;
 import Moyoung.Server.exception.BusinessLogicException;
 import Moyoung.Server.exception.ExceptionCode;
 import Moyoung.Server.member.entity.Member;
 import Moyoung.Server.member.service.MemberService;
+import Moyoung.Server.movie.entity.Movie;
 import Moyoung.Server.recruitingarticle.entity.RecruitingArticle;
 import Moyoung.Server.recruitingarticle.repository.RecruitingArticleRepository;
 import Moyoung.Server.runningtime.entity.RunningTime;
@@ -29,9 +31,15 @@ public class RecruitingArticleService {
     public void registerRecruitingArticle(RecruitingArticle recruitingArticle, long memberId) {
         Member member = memberService.findVerifiedMember(memberId);
         RunningTime runningTime = runningTimeService.findVerifiedRunningTime(recruitingArticle.getRunningTime().getRunningTimeId());
+        Movie movie = runningTime.getMovie();
+        Cinema cinema = runningTime.getCinema();
         recruitingArticle.setMember(member);
         recruitingArticle.addParticipant(member);
         recruitingArticle.setRunningTime(runningTime);
+        recruitingArticle.setCinemaRegion(cinema.getRegion());
+        recruitingArticle.setCinemaName(cinema.getName());
+        recruitingArticle.setMovieName(movie.getName());
+        recruitingArticle.setMovieThumbnailUrl(movie.getThumbnailUrl());
         recruitingArticleRepository.save(recruitingArticle);
     }
 
