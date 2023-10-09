@@ -1,12 +1,8 @@
 package Moyoung.Server.recruitingarticle.mapper;
 
-import Moyoung.Server.cinema.dto.CinemaDto;
-import Moyoung.Server.cinema.entity.Cinema;
-import Moyoung.Server.movie.dto.MovieDto;
-import Moyoung.Server.movie.entity.Movie;
+import Moyoung.Server.member.entity.Member;
 import Moyoung.Server.recruitingarticle.dto.RecruitingArticleDto;
 import Moyoung.Server.recruitingarticle.entity.RecruitingArticle;
-import Moyoung.Server.runningtime.dto.RunningTimeDto;
 import Moyoung.Server.runningtime.entity.RunningTime;
 import org.mapstruct.Mapper;
 
@@ -92,17 +88,22 @@ public interface RecruitingArticleMapper {
     }
 
     default RecruitingArticleDto.ResponseForList recruitingArticleToReseponseForList(RecruitingArticle recruitingArticle) {
+        Member writer = recruitingArticle.getMember();
         RunningTime runningTime = recruitingArticle.getRunningTime();
         return RecruitingArticleDto.ResponseForList.builder()
                 .recruitingArticleId(recruitingArticle.getRecruitingArticleId())
+                .writerDisplayName(writer.getDisplayName())
+                .writerAge(writer.getAge().getAge())
                 .title(recruitingArticle.getTitle())
+                .cinemaRegion(recruitingArticle.getCinemaRegion())
+                .cinemaName(recruitingArticle.getCinemaName())
+                .movieThumbnailUrl(recruitingArticle.getMovieThumbnailUrl())
+                .movieName(recruitingArticle.getMovieName())
+                .startTime(runningTime.getStartTime())
+                .screenInfo(runningTime.getScreenInfo())
                 .maxNum(recruitingArticle.getMaxNum())
                 .currentNum(recruitingArticle.getParticipants().size())
                 .gender(recruitingArticle.getGender().getExplain())
-                .age(recruitingArticle.getAge().getAge())
-                .runningTimeInfo(RunningTimeDto.Response.builder()
-                        .runningTimeId(runningTime.getRunningTimeId())
-                        .startTime(runningTime.getStartTime())
-                        .endTime(runningTime.getEndTime()).build()).build();
+                .age(recruitingArticle.getAge().getAge()).build();
     }
 }
