@@ -9,6 +9,7 @@ import Moyoung.Server.member.service.MemberService;
 import Moyoung.Server.recruitingarticle.entity.RecruitingArticle;
 import Moyoung.Server.recruitingarticle.service.RecruitingArticleService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -16,22 +17,24 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ChatService {
     private final ChatRepository chatRepository;
     private final MemberService memberService;
     private final RecruitingArticleService recruitingArticleService;
 
     // 채팅 보내기
-    public void SendChat(Chat chat) {
+    public Chat saveChat(Chat chat) {
         Member member = memberService.findVerifiedMember(chat.getSender().getMemberId());
         RecruitingArticle recruitingArticle = recruitingArticleService.findVerifiedRecruitingArticle(chat.getRecruitingArticle().getRecruitingArticleId());
-        if(!recruitingArticle.getParticipants().contains(member)) {
+        if (recruitingArticle.getMember().getMemberId() != member.getMemberId() && !recruitingArticle.getParticipants().contains(member)) {
             throw new BusinessLogicException(ExceptionCode.UNAUTHORIZED);
         }
         chat.setSender(member);
         chat.setRecruitingArticle(recruitingArticle);
 
-        chatRepository.save(chat);
+        return chatRepository.save(chat);
+
     }
 
     // 채팅 불러오기
