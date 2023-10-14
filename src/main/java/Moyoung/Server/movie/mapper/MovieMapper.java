@@ -34,6 +34,6 @@ public interface MovieMapper {
         return MovieDto.Rank.builder()
                 .rank(movieRank.getMovieRank())
                 .name(movieName)
-                .thumbnailRul(movie.getThumbnailUrl()).build();
+                .thumbnailUrl(movie.getThumbnailUrl()).build();
     }
 }

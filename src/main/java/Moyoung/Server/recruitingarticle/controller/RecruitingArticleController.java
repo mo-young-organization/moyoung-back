@@ -39,8 +39,13 @@ public class RecruitingArticleController {
     }
 
     @GetMapping("/recruit")
-    public ResponseEntity getRecruitingArticles(@Positive @RequestParam int page) {
-        Page<RecruitingArticle> pageRecruitingArticle = recruitingArticleService.getRecruitingArticleList(page);
+    public ResponseEntity getRecruitingArticles(@Positive @RequestParam int page,
+                                                @RequestParam(required = false) Integer gender,
+                                                @RequestParam(required = false) Boolean teenager,
+                                                @RequestParam(required = false) Boolean twenties,
+                                                @RequestParam(required = false) Boolean thirties,
+                                                @RequestParam(required = false) Double distance) {
+        Page<RecruitingArticle> pageRecruitingArticle = recruitingArticleService.getRecruitingArticleList(page, gender, teenager, twenties, thirties, distance);
         List<RecruitingArticle> recruitingArticles = pageRecruitingArticle.getContent();
         return new ResponseEntity<>(new MultiResponseDto<>(recruitingArticleMapper.recruitingArticlesToList(recruitingArticles), pageRecruitingArticle), HttpStatus.OK);
     }
