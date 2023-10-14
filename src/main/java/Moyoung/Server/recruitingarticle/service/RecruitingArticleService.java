@@ -17,6 +17,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,8 +61,19 @@ public class RecruitingArticleService {
     }
 
     // 게시글 리스트
-    public Page<RecruitingArticle> getRecruitingArticleList(int page) {
-        return recruitingArticleRepository.findAll(PageRequest.of(page - 1, 20, Sort.by("recruitingArticleId").descending()));
+    public Page<RecruitingArticle> getRecruitingArticleList(int page, Integer genderNum, Boolean teenager, Boolean twenties, Boolean thirties, Double distance) {
+        List<RecruitingArticle.Age> ageList = new ArrayList<>();
+        if (teenager != null && teenager) ageList.add(RecruitingArticle.Age.TEENAGER);
+        if (twenties != null && twenties) ageList.add(RecruitingArticle.Age.TWENTIES);
+        if (thirties != null && thirties) ageList.add(RecruitingArticle.Age.THIRTIES);
+
+        if (ageList.isEmpty()) {
+            ageList.add(RecruitingArticle.Age.TEENAGER);
+            ageList.add(RecruitingArticle.Age.TWENTIES);
+            ageList.add(RecruitingArticle.Age.THIRTIES);
+        }
+
+        return recruitingArticleRepository.findAllByGenderNumAndAgeIn(genderNum, ageList, PageRequest.of(page - 1, 20, Sort.by("recruitingArticleId").descending()));
     }
 
     // 게시글 삭제
