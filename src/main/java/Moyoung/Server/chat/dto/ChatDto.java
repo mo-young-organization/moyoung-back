@@ -13,6 +13,7 @@ public class ChatDto {
     }
 
     @Getter
+    @Setter
     @Builder
     public static class Response {
         private long senderId;
