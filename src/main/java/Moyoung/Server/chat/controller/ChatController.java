@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.web.bind.annotation.*;
@@ -28,9 +29,10 @@ public class ChatController {
     private final SimpMessageSendingOperations operations;
 
 
-    @MessageMapping("/chatroom")
-    public void sendMessage(ChatDto.Send chat) {
-        Chat savedChat = chatService.saveChat(chatMapper.sendToChat(chat));
+    // PathVariable 대신 DestinationVariable 사용 (PathVariable 활용하면 파싱 불가)
+    @MessageMapping("/recruit/{recruit-id}/chatroom")
+    public void sendMessage(@DestinationVariable("recruit-id") long recruitArticleId, ChatDto.Send chat) {
+        Chat savedChat = chatService.saveChat(chatMapper.sendToChat(chat, recruitArticleId));
 
         log.info("chat {} send by {} to room number{}", savedChat.getContent(), savedChat.getSender().getMemberId(), savedChat.getRecruitingArticle().getRecruitingArticleId());
         // /sub/chatroom/{id}로 메세지 보냄
