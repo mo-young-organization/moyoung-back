@@ -17,7 +17,7 @@ public class Chat {
     private LocalDateTime chatTime;
     private String content;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "member_id")
     private Member sender;
     @ManyToOne(fetch = FetchType.LAZY)
