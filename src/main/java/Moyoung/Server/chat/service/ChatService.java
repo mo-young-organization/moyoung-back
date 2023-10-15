@@ -15,6 +15,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -37,14 +39,19 @@ public class ChatService {
 
     }
 
-    // 채팅 불러오기
-    public Page<Chat> loadChat(long recruitingArticleId, long memberId, int page) {
-        RecruitingArticle recruitingArticle = recruitingArticleService.findVerifiedRecruitingArticle(recruitingArticleId);
-        Member member = memberService.findVerifiedMember(memberId);
-        if(!recruitingArticle.getParticipants().contains(member)) {
-            throw new BusinessLogicException(ExceptionCode.UNAUTHORIZED);
-        }
+//    // 채팅 불러오기
+//    public Page<Chat> loadChat(long recruitingArticleId, long memberId, int page) {
+//        RecruitingArticle recruitingArticle = recruitingArticleService.findVerifiedRecruitingArticle(recruitingArticleId);
+//        Member member = memberService.findVerifiedMember(memberId);
+//        if(!recruitingArticle.getParticipants().contains(member)) {
+//            throw new BusinessLogicException(ExceptionCode.UNAUTHORIZED);
+//        }
+//
+//        return chatRepository.findAllByRecruitingArticleRecruitingArticleId(recruitingArticleId, PageRequest.of(page - 1, 20, Sort.by("chatId").descending()));
+//    }
 
-        return chatRepository.findAllByRecruitingArticleRecruitingArticleId(recruitingArticleId, PageRequest.of(page - 1, 20, Sort.by("chatId").descending()));
+    // 채팅 불러오기
+    public List<Chat> getChatMessage(long recruitArticleId) {
+        return chatRepository.findAllByRecruitingArticleRecruitingArticleId(recruitArticleId);
     }
 }
