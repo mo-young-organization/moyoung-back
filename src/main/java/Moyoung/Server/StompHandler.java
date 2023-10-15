@@ -1,8 +1,6 @@
 package Moyoung.Server;
 
 import Moyoung.Server.auth.utils.JwtUtils;
-import Moyoung.Server.chat.service.ChatService;
-import Moyoung.Server.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.Message;
@@ -17,8 +15,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class StompHandler implements ChannelInterceptor {
     private final JwtUtils jwtUtils;
-    private final MemberService memberService;
-    private final ChatService chatService;
 
     @Override
     public Message<?> preSend(Message<?> message, MessageChannel channel) {
@@ -27,7 +23,7 @@ public class StompHandler implements ChannelInterceptor {
         // websocket 연결시 헤더의 jwt token 유효성 검증
         if (StompCommand.CONNECT == accessor.getCommand()) {
 
-            jwtUtils.validateToken(accessor.getNativeHeader("Authorization").toString());
+            jwtUtils.validateToken(accessor.getNativeHeader("Authorization").toString().substring(7));
         }
         return message;
     }
