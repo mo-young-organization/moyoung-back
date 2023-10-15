@@ -56,4 +56,12 @@ public class RecruitingArticleController {
         recruitingArticleService.deleteRecruitingArticle(recruitingArticleId, authenticationMemberId);
         return new ResponseEntity<>("게시글 삭제가 완료되었습니다.", HttpStatus.OK);
     }
+
+    @PostMapping("/recruit/{recruit-id}")
+    public ResponseEntity enterArticle(@PathVariable("recruit-id") long recruitingArticleId) {
+        long authenticationMemberId = JwtParseInterceptor.getAuthenticatedMemberId();
+
+        recruitingArticleService.enterRecruit(recruitingArticleId, authenticationMemberId);
+        return new ResponseEntity<>("모집글 입장이 완료되었습니다.", HttpStatus.OK);
+    }
 }

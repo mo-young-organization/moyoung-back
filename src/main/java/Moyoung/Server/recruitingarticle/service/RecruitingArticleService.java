@@ -1,5 +1,9 @@
 package Moyoung.Server.recruitingarticle.service;
 
+import Moyoung.Server.chat.dto.ChatDto;
+import Moyoung.Server.chat.entity.Chat;
+import Moyoung.Server.chat.mapper.ChatMapper;
+import Moyoung.Server.chat.service.ChatService;
 import Moyoung.Server.cinema.entity.Cinema;
 import Moyoung.Server.exception.BusinessLogicException;
 import Moyoung.Server.exception.ExceptionCode;
@@ -14,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -23,10 +28,13 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class RecruitingArticleService {
+public class RecruitingArticleService  {
     private final RecruitingArticleRepository recruitingArticleRepository;
     private final MemberService memberService;
     private final RunningTimeService runningTimeService;
+    private final ChatService chatService;
+    private final SimpMessageSendingOperations operations;
+    private final ChatMapper chatMapper;
 
     // 게시글 등록
     public void registerRecruitingArticle(RecruitingArticle recruitingArticle, long memberId) {
@@ -35,7 +43,7 @@ public class RecruitingArticleService {
         Movie movie = runningTime.getMovie();
         Cinema cinema = runningTime.getCinema();
         recruitingArticle.setMember(member);
-        recruitingArticle.addParticipant(member);
+        recruitingArticle.getMembersEntryDate().put(member, LocalDateTime.now());
         recruitingArticle.setRunningTime(runningTime);
         recruitingArticle.setCinemaRegion(cinema.getRegion());
         recruitingArticle.setCinemaName(cinema.getName());
@@ -85,20 +93,33 @@ public class RecruitingArticleService {
         recruitingArticleRepository.delete(recruitingArticle);
     }
 
-    // 게시글 참가 (발신자 확인을 위해 닉네임 반환)
-    public String enterRecruit(long recruitingArticleId, long memberId) {
+    // 게시글 참가
+    public void enterRecruit(long recruitingArticleId, long memberId) {
         RecruitingArticle recruitingArticle = findVerifiedRecruitingArticle(recruitingArticleId);
         Member member = memberService.findVerifiedMember(memberId);
 
         if (recruitingArticle.getMaxNum() - recruitingArticle.getCurrentNum() < 1) {
             throw new BusinessLogicException(ExceptionCode.CAN_NOT_ENTER);
         }
-        recruitingArticle.getParticipants().add(member);
+
+        // 중복 검사: 이미 멤버가 채팅방에 있는지 확인
+        if (recruitingArticle.getMembersEntryDate().containsKey(member)) {
+            throw new BusinessLogicException(ExceptionCode.ALREADY_ENTERED);
+        }
+
+        recruitingArticle.getMembersEntryDate().put(member, LocalDateTime.now());
         recruitingArticle.setCurrentNum(recruitingArticle.getCurrentNum() + 1);
 
         recruitingArticleRepository.save(recruitingArticle);
 
-        return member.getDisplayName();
+        Chat chat = chatService.saveChat(Chat.builder()
+                .chatTime(LocalDateTime.now())
+                .content(member.getDisplayName() + " 님이 입장했습니다.")
+                .sender(member)
+                .recruitingArticle(recruitingArticle).build());
+        ChatDto.Response response = chatMapper.chatToResponse(chat);
+        response.setDisplayName("[알림]");
+        operations.convertAndSend("/sub/chatroom/" + recruitingArticleId, response);
     }
 
     // 게시글 퇴장
@@ -106,9 +127,6 @@ public class RecruitingArticleService {
         long longRecruitingArticleId = Long.parseLong(recruitingArticleId);
         RecruitingArticle foundRecruitingArticle = findVerifiedRecruitingArticle(longRecruitingArticleId);
         Member member = memberService.findMemberByDisplayName(senderDisplayName);
-        List<Member> participants = foundRecruitingArticle.getParticipants();
-        participants.remove(member);
-        foundRecruitingArticle.setParticipants(participants);
         foundRecruitingArticle.setCurrentNum(foundRecruitingArticle.getCurrentNum() - 1);
 
         recruitingArticleRepository.save(foundRecruitingArticle);

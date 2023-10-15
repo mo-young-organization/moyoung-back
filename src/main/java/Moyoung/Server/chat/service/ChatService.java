@@ -7,15 +7,14 @@ import Moyoung.Server.exception.ExceptionCode;
 import Moyoung.Server.member.entity.Member;
 import Moyoung.Server.member.service.MemberService;
 import Moyoung.Server.recruitingarticle.entity.RecruitingArticle;
-import Moyoung.Server.recruitingarticle.service.RecruitingArticleService;
+import Moyoung.Server.recruitingarticle.repository.RecruitingArticleRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -23,13 +22,13 @@ import java.util.List;
 public class ChatService {
     private final ChatRepository chatRepository;
     private final MemberService memberService;
-    private final RecruitingArticleService recruitingArticleService;
+    private final RecruitingArticleRepository recruitingArticleRepository;
 
     // 채팅 보내기
     public Chat saveChat(Chat chat) {
         Member member = memberService.findVerifiedMember(chat.getSender().getMemberId());
-        RecruitingArticle recruitingArticle = recruitingArticleService.findVerifiedRecruitingArticle(chat.getRecruitingArticle().getRecruitingArticleId());
-        if (recruitingArticle.getMember().getMemberId() != member.getMemberId() && !recruitingArticle.getParticipants().contains(member)) {
+        RecruitingArticle recruitingArticle = findVerifiedRecruitingArticle(chat.getRecruitingArticle().getRecruitingArticleId());
+        if (recruitingArticle.getMember().getMemberId() != member.getMemberId() && !recruitingArticle.getMembersEntryDate().containsKey(member)) {
             throw new BusinessLogicException(ExceptionCode.UNAUTHORIZED);
         }
         chat.setSender(member);
@@ -37,6 +36,15 @@ public class ChatService {
 
         return chatRepository.save(chat);
 
+    }
+
+    // 순환참조 방지용 중복 메서드
+    private RecruitingArticle findVerifiedRecruitingArticle(long recruitingArticleId) {
+        Optional<RecruitingArticle> optionalRecruitingArticle = recruitingArticleRepository.findById(recruitingArticleId);
+        RecruitingArticle recruitingArticle = optionalRecruitingArticle.orElseThrow(() ->
+                new BusinessLogicException(ExceptionCode.RECRUIT_ARTICLE_NOT_FOUND));
+
+        return recruitingArticle;
     }
 
 //    // 채팅 불러오기

@@ -102,7 +102,7 @@ public interface RecruitingArticleMapper {
                 .startTime(runningTime.getStartTime())
                 .screenInfo(runningTime.getScreenInfo())
                 .maxNum(recruitingArticle.getMaxNum())
-                .currentNum(recruitingArticle.getParticipants().size())
+                .currentNum(recruitingArticle.getCurrentNum())
                 .gender(recruitingArticle.getGender().getExplain())
                 .age(recruitingArticle.getAge().getAge()).build();
     }

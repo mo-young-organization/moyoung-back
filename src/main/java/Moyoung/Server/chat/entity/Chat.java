@@ -2,6 +2,7 @@ package Moyoung.Server.chat.entity;
 
 import Moyoung.Server.member.entity.Member;
 import Moyoung.Server.recruitingarticle.entity.RecruitingArticle;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -23,4 +24,16 @@ public class Chat {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recruiting_article_id")
     private RecruitingArticle recruitingArticle;
+
+    public Chat() {
+    }
+
+    @Builder
+    public Chat(long chatId, LocalDateTime chatTime, String content, Member sender, RecruitingArticle recruitingArticle) {
+        this.chatId = chatId;
+        this.chatTime = chatTime;
+        this.content = content;
+        this.sender = sender;
+        this.recruitingArticle = recruitingArticle;
+    }
 }
