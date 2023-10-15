@@ -9,7 +9,9 @@ import lombok.Setter;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -22,11 +24,17 @@ public class RecruitingArticle {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "member_id")
     private Member member;
-    @ManyToMany(fetch = FetchType.LAZY)
-    private List<Member> participants = new ArrayList<>();
+
+    @ElementCollection
+    @CollectionTable(name = "chat_room_members", joinColumns = @JoinColumn(name = "chat_room_id"))
+    @MapKeyJoinColumn(name = "member_id")
+    @Column(name = "entry_date")
+    private Map<Member, LocalDateTime> membersEntryDate = new HashMap<>();
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "running_time_id")
     private RunningTime runningTime;
+
     @OneToMany(mappedBy = "recruitingArticle", fetch = FetchType.LAZY)
     private List<Chat> chats = new ArrayList<>();
 
@@ -45,9 +53,6 @@ public class RecruitingArticle {
     private String movieName;
     private String movieThumbnailUrl;
 
-    public void addParticipant(Member member) {
-        this.participants.add(member);
-    }
     public enum Age {
         TEENAGER("10대"),
         TWENTIES("20대"),
