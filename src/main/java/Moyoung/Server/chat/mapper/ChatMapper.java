@@ -12,11 +12,11 @@ import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface ChatMapper {
-    default Chat sendToChat(ChatDto.Send requestBody) {
+    default Chat sendToChat(ChatDto.Send requestBody, long recruitArticleId) {
         Member member = new Member();
         member.setMemberId(requestBody.getSenderId());
         RecruitingArticle recruitingArticle = new RecruitingArticle();
-        recruitingArticle.setRecruitingArticleId(requestBody.getRecruitingArticleId());
+        recruitingArticle.setRecruitingArticleId(recruitArticleId);
         Chat chat = new Chat();
         chat.setSender(member);
         chat.setRecruitingArticle(recruitingArticle);
