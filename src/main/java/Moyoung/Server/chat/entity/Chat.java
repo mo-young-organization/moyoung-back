@@ -20,7 +20,7 @@ public class Chat {
     @ManyToOne
     @JoinColumn(name = "member_id")
     private Member sender;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "recruiting_article_id")
     private RecruitingArticle recruitingArticle;
 }

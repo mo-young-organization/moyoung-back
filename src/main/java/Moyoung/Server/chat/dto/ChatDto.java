@@ -1,15 +1,15 @@
 package Moyoung.Server.chat.dto;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
+
 public class ChatDto {
     @Getter
-    public static class Post {
-        private String content;
+    public static class Send {
+        private long senderId;
+        private String message;
     }
 
     @Getter

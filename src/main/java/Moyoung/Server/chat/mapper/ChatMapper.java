@@ -12,27 +12,27 @@ import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring")
 public interface ChatMapper {
-    default Chat postToChat(ChatDto.Post requestBody, long memberId, long recruitArticleId) {
+    default Chat sendToChat(ChatDto.Send requestBody, long recruitArticleId) {
         Member member = new Member();
-        member.setMemberId(memberId);
+        member.setMemberId(requestBody.getSenderId());
         RecruitingArticle recruitingArticle = new RecruitingArticle();
         recruitingArticle.setRecruitingArticleId(recruitArticleId);
         Chat chat = new Chat();
         chat.setSender(member);
         chat.setRecruitingArticle(recruitingArticle);
         chat.setChatTime(LocalDateTime.now());
-        chat.setContent(requestBody.getContent());
+        chat.setContent(requestBody.getMessage());
 
         return chat;
     }
 
     default List<ChatDto.Response> chatsToList(List<Chat> chatList) {
         return chatList.stream()
-                .map(chat -> chatToResponseForList(chat))
+                .map(chat -> chatToResponse(chat))
                 .collect(Collectors.toList());
     }
 
-    default ChatDto.Response chatToResponseForList(Chat chat) {
+    default ChatDto.Response chatToResponse(Chat chat) {
         Member sender = chat.getSender();
         return ChatDto.Response.builder()
                 .senderId(sender.getMemberId())
