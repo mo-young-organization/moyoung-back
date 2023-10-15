@@ -8,7 +8,6 @@ import java.time.LocalDateTime;
 public class ChatDto {
     @Getter
     public static class Send {
-        private long recruitingArticleId;
         private long senderId;
         private String message;
     }
