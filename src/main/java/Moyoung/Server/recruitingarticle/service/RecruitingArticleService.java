@@ -1,8 +1,9 @@
 package Moyoung.Server.recruitingarticle.service;
 
-import Moyoung.Server.chat.dto.ChatDto;
 import Moyoung.Server.chat.entity.Chat;
+import Moyoung.Server.chat.entity.ChatRoomInfo;
 import Moyoung.Server.chat.mapper.ChatMapper;
+import Moyoung.Server.chat.repository.ChatRoomInfoRepository;
 import Moyoung.Server.chat.service.ChatService;
 import Moyoung.Server.cinema.entity.Cinema;
 import Moyoung.Server.exception.BusinessLogicException;
@@ -33,23 +34,27 @@ public class RecruitingArticleService  {
     private final MemberService memberService;
     private final RunningTimeService runningTimeService;
     private final ChatService chatService;
-    private final SimpMessageSendingOperations operations;
+    private final ChatRoomInfoRepository chatRoomInfoRepository;
     private final ChatMapper chatMapper;
+    private final SimpMessageSendingOperations operations;
 
     // 게시글 등록
     public void registerRecruitingArticle(RecruitingArticle recruitingArticle, long memberId) {
         Member member = memberService.findVerifiedMember(memberId);
         RunningTime runningTime = runningTimeService.findVerifiedRunningTime(recruitingArticle.getRunningTime().getRunningTimeId());
+        ChatRoomInfo chatRoomInfo = ChatRoomInfo.builder().member(member).recruitingArticle(recruitingArticle).entryTime(LocalDateTime.now()).build();
         Movie movie = runningTime.getMovie();
         Cinema cinema = runningTime.getCinema();
         recruitingArticle.setMember(member);
-        recruitingArticle.getMembersEntryDate().put(member, LocalDateTime.now());
+        recruitingArticle.addChatRoomInfo(chatRoomInfo);
         recruitingArticle.setRunningTime(runningTime);
         recruitingArticle.setCinemaRegion(cinema.getRegion());
         recruitingArticle.setCinemaName(cinema.getName());
         recruitingArticle.setMovieName(movie.getName());
         recruitingArticle.setMovieThumbnailUrl(movie.getThumbnailUrl());
+
         recruitingArticleRepository.save(recruitingArticle);
+        chatRoomInfoRepository.save(chatRoomInfo);
     }
 
     // 게시글 수정
@@ -103,23 +108,24 @@ public class RecruitingArticleService  {
         }
 
         // 중복 검사: 이미 멤버가 채팅방에 있는지 확인
-        if (recruitingArticle.getMembersEntryDate().containsKey(member)) {
+        if (chatRoomInfoRepository.findByMemberMemberIdAndRecruitingArticleRecruitingArticleId(memberId, recruitingArticleId).isPresent()) {
             throw new BusinessLogicException(ExceptionCode.ALREADY_ENTERED);
         }
-
-        recruitingArticle.getMembersEntryDate().put(member, LocalDateTime.now());
+        ChatRoomInfo chatRoomInfo = ChatRoomInfo.builder().member(member).recruitingArticle(recruitingArticle).entryTime(LocalDateTime.now()).build();
+        recruitingArticle.addChatRoomInfo(chatRoomInfo);
         recruitingArticle.setCurrentNum(recruitingArticle.getCurrentNum() + 1);
 
         recruitingArticleRepository.save(recruitingArticle);
+        chatRoomInfoRepository.save(chatRoomInfo);
 
         Chat chat = chatService.saveChat(Chat.builder()
                 .chatTime(LocalDateTime.now())
+                .type(Chat.Type.ENTER)
                 .content(member.getDisplayName() + " 님이 입장했습니다.")
                 .sender(member)
                 .recruitingArticle(recruitingArticle).build());
-        ChatDto.Response response = chatMapper.chatToResponse(chat);
-        response.setDisplayName("[알림]");
-        operations.convertAndSend("/sub/chatroom/" + recruitingArticleId, response);
+
+        operations.convertAndSend("/sub/chatroom/" + recruitingArticleId, chatMapper.chatToResponse(chat));
     }
 
     // 게시글 퇴장
