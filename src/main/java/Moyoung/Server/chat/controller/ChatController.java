@@ -4,6 +4,7 @@ import Moyoung.Server.chat.dto.ChatDto;
 import Moyoung.Server.chat.entity.Chat;
 import Moyoung.Server.chat.mapper.ChatMapper;
 import Moyoung.Server.chat.service.ChatService;
+import Moyoung.Server.member.dto.MemberDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -34,19 +35,11 @@ public class ChatController {
     }
 
     // 메세지 불러오기
+    // 보안 문제 때문에 세션을 통한 토큰 관리 방법 강구
     @MessageMapping("/recruit/{recruit-id}/chatroom/load")
-    public void loadMessage(@DestinationVariable("recruit-id") long recruitArticleId) {
-        List<Chat> chatList = chatService.getChatMessage(recruitArticleId);
+    public void loadMessage(@DestinationVariable("recruit-id") long recruitArticleId, MemberDto.MemberId memberId) {
+        List<Chat> chatList = chatService.getChatMessage(recruitArticleId, memberId.getMemberId());
         List<ChatDto.Response> chatResponses = chatMapper.chatsToList(chatList);
         operations.convertAndSend("/sub/chatroom/" + recruitArticleId + "/load", chatResponses);
     }
-//    @GetMapping("/recruit/{recruit-id}/chat")
-//    public ResponseEntity getChat(@PathVariable("recruit-id") long recruitArticleId,
-//                                  @RequestParam int page){
-//        long authenticationMemberId = JwtParseInterceptor.getAuthenticatedMemberId();
-//        Page<Chat> pageChat = chatService.loadChat(recruitArticleId, authenticationMemberId, page);
-//        List<Chat> chatList = pageChat.getContent();
-//
-//        return new ResponseEntity<>(new MultiResponseDto<>(chatMapper.chatsToList(chatList), pageChat), HttpStatus.OK);
-//    }
 }
