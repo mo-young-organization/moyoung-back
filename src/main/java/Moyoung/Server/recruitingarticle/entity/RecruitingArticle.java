@@ -1,6 +1,7 @@
 package Moyoung.Server.recruitingarticle.entity;
 
 import Moyoung.Server.chat.entity.Chat;
+import Moyoung.Server.chat.entity.ChatRoomInfo;
 import Moyoung.Server.member.entity.Member;
 import Moyoung.Server.runningtime.entity.RunningTime;
 import lombok.Getter;
@@ -9,9 +10,7 @@ import lombok.Setter;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Getter
 @Setter
@@ -25,15 +24,12 @@ public class RecruitingArticle {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @ElementCollection
-    @CollectionTable(name = "chat_room_members", joinColumns = @JoinColumn(name = "chat_room_id"))
-    @MapKeyJoinColumn(name = "member_id")
-    @Column(name = "entry_date")
-    private Map<Member, LocalDateTime> membersEntryDate = new HashMap<>();
-
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "running_time_id")
     private RunningTime runningTime;
+
+    @OneToMany(mappedBy = "recruitingArticle")
+    private List<ChatRoomInfo> chatRoomInfos = new ArrayList<>();
 
     @OneToMany(mappedBy = "recruitingArticle", fetch = FetchType.LAZY)
     private List<Chat> chats = new ArrayList<>();
@@ -52,6 +48,13 @@ public class RecruitingArticle {
     private String cinemaName;
     private String movieName;
     private String movieThumbnailUrl;
+
+    public void addChatRoomInfo(ChatRoomInfo chatRoomInfo) {
+        this.chatRoomInfos.add(chatRoomInfo);
+        if (chatRoomInfo.getRecruitingArticle() != this) {
+            chatRoomInfo.setRecruitingArticle(this);
+        }
+    }
 
     public enum Age {
         TEENAGER("10대"),

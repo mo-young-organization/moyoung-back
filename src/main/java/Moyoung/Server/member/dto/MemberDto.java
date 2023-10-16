@@ -36,4 +36,10 @@ public class MemberDto {
         @NotNull
         private Integer age;
     }
+
+    @Getter
+    @Setter
+    public static class MemberId {
+        private long memberId;
+    }
 }

@@ -1,7 +1,9 @@
 package Moyoung.Server.chat.service;
 
 import Moyoung.Server.chat.entity.Chat;
+import Moyoung.Server.chat.entity.ChatRoomInfo;
 import Moyoung.Server.chat.repository.ChatRepository;
+import Moyoung.Server.chat.repository.ChatRoomInfoRepository;
 import Moyoung.Server.exception.BusinessLogicException;
 import Moyoung.Server.exception.ExceptionCode;
 import Moyoung.Server.member.entity.Member;
@@ -13,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,14 +26,15 @@ public class ChatService {
     private final ChatRepository chatRepository;
     private final MemberService memberService;
     private final RecruitingArticleRepository recruitingArticleRepository;
+    private final ChatRoomInfoRepository chatRoomInfoRepository;
 
     // 채팅 보내기
     public Chat saveChat(Chat chat) {
         Member member = memberService.findVerifiedMember(chat.getSender().getMemberId());
         RecruitingArticle recruitingArticle = findVerifiedRecruitingArticle(chat.getRecruitingArticle().getRecruitingArticleId());
-        if (recruitingArticle.getMember().getMemberId() != member.getMemberId() && !recruitingArticle.getMembersEntryDate().containsKey(member)) {
-            throw new BusinessLogicException(ExceptionCode.UNAUTHORIZED);
-        }
+        // 참여 인원인지 확인
+        findChatRoomInfo(recruitingArticle.getRecruitingArticleId(), member.getMemberId());
+
         chat.setSender(member);
         chat.setRecruitingArticle(recruitingArticle);
 
@@ -47,19 +51,17 @@ public class ChatService {
         return recruitingArticle;
     }
 
-//    // 채팅 불러오기
-//    public Page<Chat> loadChat(long recruitingArticleId, long memberId, int page) {
-//        RecruitingArticle recruitingArticle = recruitingArticleService.findVerifiedRecruitingArticle(recruitingArticleId);
-//        Member member = memberService.findVerifiedMember(memberId);
-//        if(!recruitingArticle.getParticipants().contains(member)) {
-//            throw new BusinessLogicException(ExceptionCode.UNAUTHORIZED);
-//        }
-//
-//        return chatRepository.findAllByRecruitingArticleRecruitingArticleId(recruitingArticleId, PageRequest.of(page - 1, 20, Sort.by("chatId").descending()));
-//    }
-
     // 채팅 불러오기
-    public List<Chat> getChatMessage(long recruitArticleId) {
-        return chatRepository.findAllByRecruitingArticleRecruitingArticleId(recruitArticleId);
+    public List<Chat> getChatMessage(long recruitArticleId, long memberId) {
+        // 모집글 참여 시간 추출
+        ChatRoomInfo chatRoomInfo = findChatRoomInfo(recruitArticleId, memberId);
+        LocalDateTime entryDate = chatRoomInfo.getEntryTime();
+
+        return chatRepository.findChatsByRecruitingArticleAndEntryDate(recruitArticleId, entryDate);
+    }
+
+    private ChatRoomInfo findChatRoomInfo(long recruitingArticleId, long memberId) {
+        Optional<ChatRoomInfo> optionalChatRoomInfo = chatRoomInfoRepository.findByMemberMemberIdAndRecruitingArticleRecruitingArticleId(memberId, recruitingArticleId);
+        return optionalChatRoomInfo.orElseThrow(() -> new BusinessLogicException(ExceptionCode.UNAUTHORIZED));
     }
 }

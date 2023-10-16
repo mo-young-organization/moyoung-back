@@ -34,9 +34,11 @@ public interface ChatMapper {
 
     default ChatDto.Response chatToResponse(Chat chat) {
         Member sender = chat.getSender();
+        String displayName = sender.getDisplayName();
+        if (chat.getType().equals(Chat.Type.ENTER) || chat.getType().equals(Chat.Type.EXIT)) displayName = "[알림]";
         return ChatDto.Response.builder()
                 .senderId(sender.getMemberId())
-                .displayName(sender.getDisplayName())
+                .displayName(displayName)
                 .chatTime(chat.getChatTime())
                 .content(chat.getContent()).build();
     }
