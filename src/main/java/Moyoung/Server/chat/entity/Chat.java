@@ -17,6 +17,7 @@ public class Chat {
     private long chatId;
     private LocalDateTime chatTime;
     private String content;
+    private Type type = Type.CHAT;
 
     @ManyToOne
     @JoinColumn(name = "member_id")
@@ -29,11 +30,16 @@ public class Chat {
     }
 
     @Builder
-    public Chat(long chatId, LocalDateTime chatTime, String content, Member sender, RecruitingArticle recruitingArticle) {
+    public Chat(long chatId, LocalDateTime chatTime, String content, Type type, Member sender, RecruitingArticle recruitingArticle) {
         this.chatId = chatId;
         this.chatTime = chatTime;
         this.content = content;
+        this.type = type;
         this.sender = sender;
         this.recruitingArticle = recruitingArticle;
+    }
+
+    public enum Type {
+        ENTER, CHAT, EXIT
     }
 }
