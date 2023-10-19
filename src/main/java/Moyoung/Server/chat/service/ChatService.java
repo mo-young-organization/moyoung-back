@@ -16,8 +16,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -58,6 +60,16 @@ public class ChatService {
         LocalDateTime entryDate = chatRoomInfo.getEntryTime();
 
         return chatRepository.findChatsByRecruitingArticleAndEntryDate(recruitArticleId, entryDate);
+    }
+
+    // 채팅방 리스트 불러오기
+    public List<ChatRoomInfo> getChatRoomList(long memberId) {
+        List<ChatRoomInfo> chatRoomInfoList = chatRoomInfoRepository.findAllByMemberMemberId(memberId);
+
+        // 최근 메세지가 추가된 시간을 기준으로 정렬
+        return chatRoomInfoList.stream()
+                .sorted(Comparator.comparing(ChatRoomInfo::getLastMessageAt))
+                .collect(Collectors.toList());
     }
 
     private ChatRoomInfo findChatRoomInfo(long recruitingArticleId, long memberId) {

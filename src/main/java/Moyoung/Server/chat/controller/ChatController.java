@@ -2,6 +2,7 @@ package Moyoung.Server.chat.controller;
 
 import Moyoung.Server.chat.dto.ChatDto;
 import Moyoung.Server.chat.entity.Chat;
+import Moyoung.Server.chat.entity.ChatRoomInfo;
 import Moyoung.Server.chat.mapper.ChatMapper;
 import Moyoung.Server.chat.service.ChatService;
 import Moyoung.Server.member.dto.MemberDto;
@@ -41,5 +42,12 @@ public class ChatController {
         List<Chat> chatList = chatService.getChatMessage(recruitArticleId, memberId.getMemberId());
         List<ChatDto.Response> chatResponses = chatMapper.chatsToList(chatList);
         operations.convertAndSend("/sub/chatroom/" + recruitArticleId + "/load", chatResponses);
+    }
+
+    @MessageMapping("/chatroom-list")
+    public void loadChatRoomList(MemberDto.MemberId memberId) {
+        List<ChatRoomInfo> chatRoomInfoList = chatService.getChatRoomList(memberId.getMemberId());
+        List<ChatDto.ChatRoomResponse> chatRoomResponses = chatMapper.chatRoomInfosToList(chatRoomInfoList);
+        operations.convertAndSend("/sub/chatroom/" + memberId + "/load", chatRoomResponses);
     }
 }

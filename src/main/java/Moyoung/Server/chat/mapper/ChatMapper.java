@@ -2,6 +2,7 @@ package Moyoung.Server.chat.mapper;
 
 import Moyoung.Server.chat.dto.ChatDto;
 import Moyoung.Server.chat.entity.Chat;
+import Moyoung.Server.chat.entity.ChatRoomInfo;
 import Moyoung.Server.member.entity.Member;
 import Moyoung.Server.recruitingarticle.entity.RecruitingArticle;
 import org.mapstruct.Mapper;
@@ -24,6 +25,20 @@ public interface ChatMapper {
         chat.setContent(requestBody.getMessage());
 
         return chat;
+    }
+
+    default List<ChatDto.ChatRoomResponse> chatRoomInfosToList(List<ChatRoomInfo> chatRoomInfoList) {
+        return chatRoomInfoList.stream()
+                .map(chatRoomInfo -> chatRoomInfoToResponse(chatRoomInfo))
+                .collect(Collectors.toList());
+    }
+
+    default ChatDto.ChatRoomResponse chatRoomInfoToResponse(ChatRoomInfo chatRoomInfo) {
+        return ChatDto.ChatRoomResponse.builder()
+                .recruitingArticleId(chatRoomInfo.getRecruitingArticle().getRecruitingArticleId())
+                .unreadCount(chatRoomInfo.getUnreadCount())
+                .lastMessage(chatRoomInfo.getLastMessage())
+                .lastMessageAt(chatRoomInfo.getLastMessageAt()).build();
     }
 
     default List<ChatDto.Response> chatsToList(List<Chat> chatList) {
