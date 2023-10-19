@@ -40,6 +40,18 @@ public class ChatService {
         chat.setSender(member);
         chat.setRecruitingArticle(recruitingArticle);
 
+        // 대화 참여인원 채팅방 정보 갱신
+        // if chat.Type.equals CHAT
+        if (chat.getType().equals(Chat.Type.CHAT)) {
+            List<ChatRoomInfo> chatRoomInfoList = chatRoomInfoRepository.findAllByRecruitingArticleRecruitingArticleId(recruitingArticle.getRecruitingArticleId());
+            chatRoomInfoList.forEach(chatRoomInfo -> {
+                chatRoomInfo.setLastMessage(chat.getContent());
+                chatRoomInfo.setLastMessageAt(chat.getChatTime());
+                chatRoomInfo.plusUnreadCount();
+                chatRoomInfoRepository.save(chatRoomInfo);
+            });
+        }
+
         return chatRepository.save(chat);
 
     }
@@ -58,6 +70,10 @@ public class ChatService {
         // 모집글 참여 시간 추출
         ChatRoomInfo chatRoomInfo = findChatRoomInfo(recruitArticleId, memberId);
         LocalDateTime entryDate = chatRoomInfo.getEntryTime();
+
+        // unreadCount 초기화
+        chatRoomInfo.resetUnreadCount();
+        chatRoomInfoRepository.save(chatRoomInfo);
 
         return chatRepository.findChatsByRecruitingArticleAndEntryDate(recruitArticleId, entryDate);
     }
