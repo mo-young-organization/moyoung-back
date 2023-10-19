@@ -23,6 +23,9 @@ public class ChatRoomInfo {
     @JoinColumn(name = "member_id")
     private Member member;
     private LocalDateTime entryTime;
+    private int unreadCount;
+    private String lastMessage;
+    private LocalDateTime lastMessageAt;
 
     public ChatRoomInfo() {
     }
