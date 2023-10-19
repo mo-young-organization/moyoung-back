@@ -23,7 +23,7 @@ public class ChatRoomInfo {
     @JoinColumn(name = "member_id")
     private Member member;
     private LocalDateTime entryTime;
-    private int unreadCount;
+    private int unreadCount = 0;
     private String lastMessage;
     private LocalDateTime lastMessageAt;
 
@@ -34,5 +34,13 @@ public class ChatRoomInfo {
         this.recruitingArticle = recruitingArticle;
         this.member = member;
         this.entryTime = entryTime;
+    }
+
+    public void resetUnreadCount() {
+        this.unreadCount = 0;
+    }
+
+    public void plusUnreadCount() {
+        this.unreadCount = this.unreadCount + 1;
     }
 }
