@@ -48,7 +48,7 @@ public class RecruitingArticleService  {
         recruitingArticle.setMember(member);
         recruitingArticle.addChatRoomInfo(chatRoomInfo);
         recruitingArticle.setRunningTime(runningTime);
-        recruitingArticle.setCinemaRegion(cinema.getRegion());
+        recruitingArticle.setCinemaRegion(cinema.getRegion_1());
         recruitingArticle.setCinemaName(cinema.getName());
         recruitingArticle.setMovieName(movie.getName());
         recruitingArticle.setMovieThumbnailUrl(movie.getThumbnailUrl());

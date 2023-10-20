@@ -29,8 +29,8 @@ public class CinemaService {
                     cinema.getBrand(),
                     cinema.getName(),
                     cinema.getAddress(),
-                    cinema.getLatitude(),
-                    cinema.getLongitude()
+                    cinema.getX(),
+                    cinema.getY()
             );
 
             List<CinemaPlus.ScreenInfo> screenInfoList = new ArrayList<>();

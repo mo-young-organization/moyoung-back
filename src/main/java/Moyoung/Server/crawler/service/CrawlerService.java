@@ -157,10 +157,10 @@ public class CrawlerService {
                 MegaResponse jsonResponse = gson.fromJson(responseString, MegaResponse.class);
 
                 // 위도 경도 주소 설정
-                if (cinema.getLatitude() == 0 && cinema.getLongitude() == 0) {
+                if (cinema.getX() == 0 && cinema.getY() == 0) {
                     MegaResponse.BrchInfo brchInfo =  jsonResponse.getMegaMap().getBrchInfo();
-                    cinema.setLatitude(brchInfo.getBrchLat());
-                    cinema.setLongitude(brchInfo.getBrchLon());
+                    cinema.setX(brchInfo.getBrchLat());
+                    cinema.setY(brchInfo.getBrchLon());
                     String address = brchInfo.getAddress();
 
                     // 괄호 대체
@@ -343,7 +343,7 @@ public class CrawlerService {
 
             for (Cinema cinema : megaCinemaList) {
                 System.out.println(cinema.getCinemaId());
-                String region = cinema.getRegion();
+                String region = cinema.getRegion_1();
                 String regionNo = getRegionNumber(region);
                 String cinemaNo = cinema.getCode();
 
