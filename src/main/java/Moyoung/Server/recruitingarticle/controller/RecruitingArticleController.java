@@ -38,6 +38,14 @@ public class RecruitingArticleController {
         return new ResponseEntity<>("게시글 수정이 완료되었습니다.", HttpStatus.OK);
     }
 
+    // 비로그인 게시물 불러오기(필터 x), 인터셉터를 활용 안하기 때문에 다른 엔드포인트 활용
+    @GetMapping("/recruit-article")
+    public ResponseEntity getRecruitingArticlesNonLogin(@Positive @RequestParam int page) {
+        Page<RecruitingArticle> pageRecruitingArticle = recruitingArticleService.getRecruitingArticleListNonLogin(page);
+        List<RecruitingArticle> recruitingArticles = pageRecruitingArticle.getContent();
+        return new ResponseEntity<>(new MultiResponseDto<>(recruitingArticleMapper.recruitingArticlesToList(recruitingArticles), pageRecruitingArticle), HttpStatus.OK);
+    }
+
     @GetMapping("/recruit")
     public ResponseEntity getRecruitingArticles(@Positive @RequestParam int page,
                                                 @RequestParam(required = false) Integer gender,
