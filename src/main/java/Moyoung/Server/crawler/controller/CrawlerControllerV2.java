@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/v2/crawler")
@@ -19,5 +21,12 @@ public class CrawlerControllerV2 {
         crawlerServiceV2.crawlCinemaXY();
 
         return new ResponseEntity(HttpStatus.OK);
+    }
+
+    @PostMapping("/test")
+    public ResponseEntity test() throws IOException {
+        crawlerServiceV2.crawlRunningTime();
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }
