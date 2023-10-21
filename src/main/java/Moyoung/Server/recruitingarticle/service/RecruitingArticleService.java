@@ -73,6 +73,11 @@ public class RecruitingArticleService  {
         recruitingArticleRepository.save(findedRecruitingArticle);
     }
 
+    // 게시글 리스트 (비로그인)
+    public Page<RecruitingArticle> getRecruitingArticleListNonLogin(int page) {
+        return recruitingArticleRepository.findAll(PageRequest.of(page - 1, 20, Sort.by("recruitingArticleId").descending()));
+    }
+
     // 게시글 리스트
     public Page<RecruitingArticle> getRecruitingArticleList(int page, Integer genderNum, Boolean teenager, Boolean twenties, Boolean thirties, Double distance) {
         List<RecruitingArticle.Age> ageList = new ArrayList<>();

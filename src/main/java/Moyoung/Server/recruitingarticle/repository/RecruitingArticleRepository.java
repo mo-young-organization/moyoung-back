@@ -22,4 +22,6 @@ public interface RecruitingArticleRepository extends JpaRepository<RecruitingArt
             @Param("ageList") List<RecruitingArticle.Age> ageList,
             Pageable pageable
     );
+
+    Page<RecruitingArticle> findAll (Pageable pageable);
 }
