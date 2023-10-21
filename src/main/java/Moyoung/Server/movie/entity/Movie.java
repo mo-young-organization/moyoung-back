@@ -15,14 +15,17 @@ public class Movie {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long movieId;
+    private long movieCode;
+    private String showTm; // 상영 시간
     private String name;
     private String thumbnailUrl;
     private String movieRating;
     @Column(length = 1500)
     private String info;
-    private String releaseDate;
+    private String releaseDate; // 개봉일자
     private String genre;
     private String runningTime;
+    private String country;
     @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL)
     List<MovieRank> movieRanks = new ArrayList<>();
     private LocalDate lastAddedAt;
@@ -32,5 +35,15 @@ public class Movie {
         if (movieRank.getMovie() != this) {
             movieRank.setMovie(this);
         }
+    }
+    public void addCountry(String country) {
+        if (this.country != null) {
+            this.country = this.country + ", " + country;
+        } else this.country = country;
+    }
+    public void addGenre(String genre) {
+        if (this.genre != null) {
+            this.genre = this.genre + ", " + genre;
+        } else this.genre = genre;
     }
 }
