@@ -13,6 +13,7 @@ import Moyoung.Server.runningtime.entity.RunningTime;
 import Moyoung.Server.runningtime.repository.RunningTimeRepository;
 import com.google.gson.Gson;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -43,13 +44,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CrawlerServiceV2 {
 
     private final CinemaRepository cinemaRepository;
@@ -72,7 +73,7 @@ public class CrawlerServiceV2 {
         LocalDate currentDate = LocalDate.now();
 
         // 현재 날짜에서 5일을 더한 날짜 계산
-        LocalDate playDate = currentDate.plus(5, ChronoUnit.DAYS);
+        LocalDate playDate = currentDate;//plus(5, ChronoUnit.DAYS);
 
         // 날짜 포맷 지정 (yyyyMMdd 형식으로)
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
@@ -160,6 +161,7 @@ public class CrawlerServiceV2 {
 
                         MovieInfoResultResponse.MovieInfo movieInfo = movieInfoResultResponse.getMovieInfoResult().getMovieInfo();
 
+                        String movieShowTm = movieInfo.getShowTm();
                         String openDt = movieInfo.getOpenDt();
                         List<MovieInfoResultResponse.Nation> nations = movieInfo.getNations();
                         List<MovieInfoResultResponse.Genre> genres = movieInfo.getGenres();
@@ -168,7 +170,9 @@ public class CrawlerServiceV2 {
                         movie = new Movie();
                         movie.setName(movieNm);
                         // 개봉일 추가
+                        movie.setShowTm(movieShowTm);
                         movie.setReleaseDate(openDt);
+                        movie.setMovieCode(movieCd);
 
                         // 국가 추가
                         for (MovieInfoResultResponse.Nation nation : nations) {
@@ -263,8 +267,17 @@ public class CrawlerServiceV2 {
                             }
                         }
                     }
+                    movie.setLastAddedAt(playDate);
                     movie = movieRepository.save(movie);
                     runningTime.setMovie(movie);
+                    showTm = movie.getShowTm();
+                    try {
+                        if (showTm != null && !showTm.isEmpty()) {
+                            runningTime.setEndTime(runningTime.getStartTime().plusMinutes(Long.parseLong(showTm) + 10L));
+                        }
+                    } catch (NumberFormatException e) {
+                        log.error("Cinema: {} Movie: {}", cinema.getName(), movie.getName());
+                    }
                     runningTimeRepository.save(runningTime);
                 }
             }
