@@ -49,6 +49,13 @@ public class RecruitingArticle {
     private String movieName;
     private String movieThumbnailUrl;
 
+    public void setRunningTime(RunningTime runningTime) {
+        this.runningTime = runningTime;
+        if (!runningTime.getRecruitingArticles().contains(this)) {
+            runningTime.addRecruitingArticle(this);
+        }
+    }
+
     public void addChatRoomInfo(ChatRoomInfo chatRoomInfo) {
         this.chatRoomInfos.add(chatRoomInfo);
         if (chatRoomInfo.getRecruitingArticle() != this) {
