@@ -12,12 +12,15 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 public class CinemaPlus {
-    private long cinemaId;
-    private String brand;
+    private Long cinemaId;
+    private String region_1;
+    private String region_2;
+    private String code;
     private String name;
     private String address;
-    private double latitude;
-    private double longitude;
+    private String brand;
+    private double x;
+    private double y;
     private List<ScreenInfo> screenInfoList;
 
     @Getter
@@ -32,7 +35,7 @@ public class CinemaPlus {
         this.brand = brand;
         this.name = name;
         this.address = address;
-        this.latitude = latitude;
-        this.longitude = longitude;
+        this.x = latitude;
+        this.y = longitude;
     }
 }
