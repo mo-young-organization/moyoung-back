@@ -2,11 +2,14 @@ package Moyoung.Server.runningtime.entity;
 
 import Moyoung.Server.cinema.entity.Cinema;
 import Moyoung.Server.movie.entity.Movie;
+import Moyoung.Server.recruitingarticle.entity.RecruitingArticle;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -18,7 +21,6 @@ public class RunningTime {
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private String screenInfo;
-    private Boolean earlyMorning;
 
     @ManyToOne
     @JoinColumn(name = "cinema_id")
@@ -26,4 +28,14 @@ public class RunningTime {
     @ManyToOne
     @JoinColumn(name = "movie_id")
     private Movie movie;
+    @OneToMany(mappedBy = "runningTime", cascade = CascadeType.PERSIST)
+    private List<RecruitingArticle> recruitingArticles = new ArrayList<>();
+
+    public void addRecruitingArticle(RecruitingArticle recruitingArticle) {
+        this.recruitingArticles.add(recruitingArticle);
+
+        if (recruitingArticle.getRunningTime() != this) {
+            recruitingArticle.setRunningTime(this);
+        }
+    }
 }

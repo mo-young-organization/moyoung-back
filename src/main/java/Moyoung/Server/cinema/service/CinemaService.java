@@ -11,7 +11,9 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -19,9 +21,19 @@ public class CinemaService {
     private final CinemaRepository cinemaRepository;
     private final RunningTimeService runningTimeService;
 
-    public List<CinemaPlus> find(double latitude, double longitude, double distance, boolean mega, boolean lotte, boolean cgv, boolean early, Movie movie, LocalDate date) {
+    public List<CinemaPlus> find(double latitude, double longitude, double distance, boolean mega, boolean lotte, boolean cgv, Movie movie, LocalDate date) {
         List<CinemaPlus> cinemaPlusList = new ArrayList<>();
-        List<Cinema> cinemaList = cinemaRepository.findCinemasWithinDistanceAndFilter(latitude, longitude, distance, mega, lotte, cgv);
+
+        Set<String> brands = new HashSet<>();
+        if (cgv) brands.add("CGV");
+        if (mega) brands.add("Mega");
+        if (lotte) brands.add("Lotte");
+        if (!mega && !lotte && !cgv) {
+            brands.add("Mega");
+            brands.add("Lotte");
+            brands.add("cgv");
+        }
+        List<Cinema> cinemaList = cinemaRepository.findCinemasWithinDistanceAndFilter(latitude, longitude, distance, brands);
 
         for (Cinema cinema : cinemaList) {
             CinemaPlus cinemaPlus = new CinemaPlus(
@@ -35,7 +47,7 @@ public class CinemaService {
 
             List<CinemaPlus.ScreenInfo> screenInfoList = new ArrayList<>();
 
-            List<RunningTime> runningTimeList = runningTimeService.find(cinema, movie, early, date);
+            List<RunningTime> runningTimeList = runningTimeService.find(cinema, movie, date);
 
             for (RunningTime runningTime : runningTimeList) {
                 boolean found = false;

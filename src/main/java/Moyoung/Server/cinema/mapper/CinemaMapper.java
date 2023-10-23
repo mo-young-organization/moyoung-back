@@ -36,8 +36,8 @@ public interface CinemaMapper {
                 .brand(cinemaPlus.getBrand())
                 .name(cinemaPlus.getName())
                 .address(cinemaPlus.getAddress())
-                .latitude(cinemaPlus.getLatitude())
-                .longitude(cinemaPlus.getLongitude())
+                .latitude(cinemaPlus.getX())
+                .longitude(cinemaPlus.getY())
                 .screenInfoList(screenInfoListToCinemaDtoScreenInfoList(cinemaPlus.getScreenInfoList())).build();
     }
 

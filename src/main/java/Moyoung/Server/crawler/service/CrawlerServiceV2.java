@@ -2,22 +2,22 @@ package Moyoung.Server.crawler.service;
 
 import Moyoung.Server.cinema.entity.Cinema;
 import Moyoung.Server.cinema.repository.CinemaRepository;
-import Moyoung.Server.crawler.entity.Cinema_crawler;
-import Moyoung.Server.crawler.repository.Cinema_crawlerRepository;
-import Moyoung.Server.crawler.response.MegaResponse;
 import Moyoung.Server.crawler.response.MovieInfoResultResponse;
+import Moyoung.Server.crawler.response.RankResponse;
 import Moyoung.Server.crawler.response.TheaterSchedule;
 import Moyoung.Server.movie.entity.Movie;
+import Moyoung.Server.movie.entity.MovieRank;
+import Moyoung.Server.movie.repository.MovieRankRepository;
 import Moyoung.Server.movie.repository.MovieRepository;
 import Moyoung.Server.runningtime.entity.RunningTime;
 import Moyoung.Server.runningtime.repository.RunningTimeRepository;
 import com.google.gson.Gson;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -33,6 +33,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponents;
@@ -43,19 +44,20 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CrawlerServiceV2 {
 
     private final CinemaRepository cinemaRepository;
     private final MovieRepository movieRepository;
     private final RunningTimeRepository runningTimeRepository;
-    private final Cinema_crawlerRepository cinemaCrawlerRepository;
+    private final MovieRankRepository movieRankRepository;
+
 
     @Value("${crawler.key}")
     private String KEY;
@@ -63,8 +65,64 @@ public class CrawlerServiceV2 {
     @Value("${crawler.kakao.key}")
     private String KAKAOKEY;
 
+    private String IMAGE_URL = "https://www.kobis.or.kr";
+
+    // 영화 순위 크롤링 메서드 (1위 부터 5위까지)
+    @Scheduled(cron = "1 0 0 * * *") // 매일 0시 0분 1초 실행
+    public void crawlMovieRank() throws IOException {
+        // 당일 날짜는 정보가 없기 때문에 전일로 진행
+        LocalDate date = LocalDate.now().minusDays(1);
+
+        // 날짜 포맷 지정 (yyyyMMdd 형식으로)
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String dateStr = date.format(formatter);
+
+        try {
+            CloseableHttpClient httpClient = HttpClients.createDefault();
 
 
+
+            String url = UriComponentsBuilder.fromUriString("http://www.kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.json")
+                    .queryParam("key", KEY)
+                    .queryParam("targetDt", dateStr)
+                    .queryParam("itemPerPage", 5).build().toString();
+
+            // Get 요청 생성
+            HttpGet httpGet = new HttpGet(url);
+
+            // 요청 보내기
+            CloseableHttpResponse response = httpClient.execute(httpGet);
+
+            // 응답 받기
+            org.apache.http.HttpEntity responseEntity = response.getEntity();
+            String responseString = EntityUtils.toString(responseEntity);
+
+            // Gson을 사용하여 JSON 파싱
+            Gson gson = new Gson();
+            RankResponse jsonResponse = gson.fromJson(responseString, RankResponse.class);
+
+            if (jsonResponse != null) {
+                RankResponse.DailyBoxOffice[] dailyBoxOffices = jsonResponse.getBoxOfficeResult().getDailyBoxOfficeList();
+
+                for (int i = 0; i < dailyBoxOffices.length; i++) {
+                    MovieRank movieRank = new MovieRank();
+                    movieRank.setDate(date);
+                    movieRank.setMovieRank(i + 1);
+
+                    Movie movie = movieRepository.findAllByNameContains(dailyBoxOffices[i].getMovieNm()).get(0);
+                    movieRank.setMovie(movie);
+
+                    movieRankRepository.save(movieRank);
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // 영화 상영시간 크롤링 메서드
+    @Scheduled(cron = "0 0 2 * * *") // 매일 02시 0분 0초 실행
     public void crawlRunningTime() throws IOException {
         List<Cinema> cinemaList = cinemaRepository.findAll();
 
@@ -72,7 +130,7 @@ public class CrawlerServiceV2 {
         LocalDate currentDate = LocalDate.now();
 
         // 현재 날짜에서 5일을 더한 날짜 계산
-        LocalDate playDate = currentDate.plus(5, ChronoUnit.DAYS);
+        LocalDate playDate = currentDate;//plus(5, ChronoUnit.DAYS);
 
         // 날짜 포맷 지정 (yyyyMMdd 형식으로)
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
@@ -160,6 +218,7 @@ public class CrawlerServiceV2 {
 
                         MovieInfoResultResponse.MovieInfo movieInfo = movieInfoResultResponse.getMovieInfoResult().getMovieInfo();
 
+                        String movieShowTm = movieInfo.getShowTm();
                         String openDt = movieInfo.getOpenDt();
                         List<MovieInfoResultResponse.Nation> nations = movieInfo.getNations();
                         List<MovieInfoResultResponse.Genre> genres = movieInfo.getGenres();
@@ -168,7 +227,9 @@ public class CrawlerServiceV2 {
                         movie = new Movie();
                         movie.setName(movieNm);
                         // 개봉일 추가
+                        movie.setShowTm(movieShowTm);
                         movie.setReleaseDate(openDt);
+                        movie.setMovieCode(movieCd);
 
                         // 국가 추가
                         for (MovieInfoResultResponse.Nation nation : nations) {
@@ -183,107 +244,66 @@ public class CrawlerServiceV2 {
                             movie.setMovieRating(audit.getWatchGradeNm());
                         }
 
-                        // 메가박스 크롤링을 통한 영화 포스터 url, 영화 소개 등 불러오기
-                        List<Cinema_crawler> megaCinemaList = cinemaCrawlerRepository.findAll();
+                        url = "https://www.kobis.or.kr/kobis/business/mast/mvie/searchMovieDtl.do";
+                        httpPost = new HttpPost(url);
 
-                        for (Cinema_crawler cinemaCrawler : megaCinemaList) {
-                            httpClient = HttpClients.createDefault();
+                        // form-data 생성
+                        List<BasicNameValuePair> formParams = new ArrayList<>();
+                        formParams.add(new BasicNameValuePair("code", movieCd));
+                        formParams.add(new BasicNameValuePair("titleYN", "Y"));
 
-                            // URL 설정
-                            url = "https://www.megabox.co.kr/on/oh/ohc/Brch/schedulePage.do";
+                        // UrlEncodedFormEntity로 form-data 설정
+                        UrlEncodedFormEntity formEntity = new UrlEncodedFormEntity(formParams, "UTF-8");
+                        httpPost.setEntity(formEntity);
 
-                            // POST 요청 생성
-                            httpPost = new HttpPost(url);
-                            cinemaNo = cinemaCrawler.getCode();
+                        // 요청 보내기
+                        response = httpClient.execute(httpPost);
 
-                            String requestBody = "{\n" +
-                                    "    \"masterType\": \"brch\",\n" +
-                                    "    \"detailType\": \"area\",\n" +
-                                    "    \"brchNo\": \"" + cinemaNo + "\",\n" +
-                                    "    \"brchNo1\": \"" + cinemaNo + "\",\n" +
-                                    "    \"firstAt\": \"Y\",\n" +
-                                    "    \"playDe\": \"" + playDateStr + "\"\n" +
-                                    "}";
+                        // 응답을 파싱하고 Document로 변환
+                        String responseBody = EntityUtils.toString(response.getEntity(), "UTF-8");
+                        Document doc = Jsoup.parse(responseBody);
 
-                            StringEntity entity = new StringEntity(requestBody);
-                            httpPost.setEntity(entity);
+                        Element aElement = doc.select("a.fl.thumb").first();
 
-                            // 요청 헤더 설정
-                            httpPost.setHeader("Content-Type", "application/json");
-                            httpPost.setHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36");
-
-                            // 요청 보내기
-                            response = httpClient.execute(httpPost);
-
-                            // 응답 받기
-                            responseEntity = response.getEntity();
-                            responseString = EntityUtils.toString(responseEntity);
-
-                            // Gson을 사용하여 JSON 파싱
-                            gson = new Gson();
-                            MegaResponse jsonResponse = gson.fromJson(responseString, MegaResponse.class);
-
-                            for (MegaResponse.MovieForm movieForm : jsonResponse.getMegaMap().getMovieFormList()) {
-
-                                // 괄호와 괄호 내용 제거
-                                // 영화 제목이 포함되지 않았다면 다음 movieForm 실행
-                                if (!movieForm.getMovieNm().contains(removeParentheses(movieNm))) continue;
-
-                                String rpstMovieNo = movieForm.getRpstMovieNo();
-                                movieInfoUrl = "https://www.megabox.co.kr/movie-detail?rpstMovieNo=" + rpstMovieNo;
-
-                                try {
-                                    // Jsoup을 사용하여 웹 페이지를 가져옴
-                                    Document doc = Jsoup.connect(movieInfoUrl).get();
-
-                                    // 포스터 이미지를 포함하는 HTML 요소를 선택
-                                    Element posterElement = doc.selectFirst("#contents > div.movie-detail-page > div.movie-detail-cont > div.poster > div > img");
-
-                                    if (posterElement != null) {
-                                        // 포스터 이미지의 src 속성을 가져옴
-                                        String posterImageUrl = posterElement.attr("src");
-                                        movie.setThumbnailUrl(posterImageUrl);
-                                    } else {
-                                        System.out.println("포스터 이미지를 찾을 수 없습니다.");
-                                    }
-
-                                    // 영화 정보 텍스트를 가져옴
-                                    Element descriptionMeta = doc.select("meta[property=description]").first();
-
-                                    if (descriptionMeta != null) {
-                                        String description = descriptionMeta.attr("content");
-                                        movie.setInfo(description);
-                                    } else {
-                                        System.out.println("영화 정보를 찾을 수 없습니다.");
-                                    }
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                                outerLoop: break outerLoop;
-                            }
+                        String hrefValue = null;
+                        if (aElement != null) {
+                            // "href" 속성의 값을 가져옴
+                            hrefValue = aElement.attr("href");
+                            log.info("href 값: " + hrefValue);
+                        } else {
+                            log.error("class 'fl thumb'를 가진 <a> 요소를 찾을 수 없습니다.");
                         }
+
+                        movie.setThumbnailUrl(IMAGE_URL + hrefValue);
+
+                        Element pElement = doc.select("p.desc_info").first();
+                        String pElementText = null;
+
+                        if (pElement != null) {
+                            pElementText = pElement.text();
+                        }
+
+                        movie.setInfo(pElementText);
+
                     }
+                    movie.setLastAddedAt(playDate);
                     movie = movieRepository.save(movie);
                     runningTime.setMovie(movie);
+                    showTm = movie.getShowTm();
+                    try {
+                        if (showTm != null && !showTm.isEmpty()) {
+                            runningTime.setEndTime(runningTime.getStartTime().plusMinutes(Long.parseLong(showTm) + 10L));
+                        }
+                    } catch (NumberFormatException e) {
+                        log.error("Cinema: {} Movie: {}", cinema.getName(), movie.getName());
+                    }
                     runningTimeRepository.save(runningTime);
                 }
             }
         }
     }
 
-
-    // 영화 뒤의 괄호와 괄호 안 내용 제거
-    private static String removeParentheses(String input) {
-        int startIndex = input.indexOf('(');
-        int endIndex = input.indexOf(')');
-
-        if (startIndex != -1 && endIndex != -1 && startIndex < endIndex) {
-            return input.substring(0, startIndex).trim() + input.substring(endIndex + 1);
-        }
-
-        return input;
-    }
-
+    // kakao Api를 통한 x, y(위도, 경도) 설정 메서드
     public void crawlCinemaXY() {
         List<Cinema> cinemaList = cinemaRepository.findAll();
 

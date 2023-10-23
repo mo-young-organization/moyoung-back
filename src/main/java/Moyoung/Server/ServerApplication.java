@@ -2,10 +2,12 @@ package Moyoung.Server;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 import javax.annotation.PostConstruct;
 import java.util.TimeZone;
 
+@EnableScheduling
 @SpringBootApplication
 public class ServerApplication {
 	@PostConstruct
