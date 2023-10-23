@@ -19,6 +19,8 @@ public class MovieInfoResultResponse {
 
     @Getter
     public static class MovieInfo {
+        @SerializedName("showTm")
+        private String showTm;
         @SerializedName("openDt")
         private String openDt;
         @SerializedName("nations")
