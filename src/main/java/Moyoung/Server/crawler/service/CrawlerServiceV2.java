@@ -68,7 +68,7 @@ public class CrawlerServiceV2 {
     private String IMAGE_URL = "https://www.kobis.or.kr";
 
     // 영화 순위 크롤링 메서드 (1위 부터 5위까지)
-    @Scheduled(cron = "1 0 0 * * *") // 매일 0시 0분 1초 실행
+    @Scheduled(cron = "5 0 0 * * *") // 매일 0시 0분 5초 실행
     public void crawlMovieRank() throws IOException {
         // 당일 날짜는 정보가 없기 때문에 전일로 진행
         LocalDate date = LocalDate.now().minusDays(1);
@@ -122,7 +122,7 @@ public class CrawlerServiceV2 {
     }
 
     // 영화 상영시간 크롤링 메서드
-    @Scheduled(cron = "0 0 2 * * *") // 매일 02시 0분 0초 실행
+    @Scheduled(cron = "5 0 0 * * *") // 매일 0시 5분 0초 실행
     public void crawlRunningTime() throws IOException {
         List<Cinema> cinemaList = cinemaRepository.findAll();
 
@@ -163,7 +163,13 @@ public class CrawlerServiceV2 {
 
             // Gson을 사용하여 JSON 파싱
             Gson gson = new Gson();
-            TheaterSchedule theaterSchedule = gson.fromJson(responseString, TheaterSchedule.class);
+            TheaterSchedule theaterSchedule;
+            try {
+                theaterSchedule = gson.fromJson(responseString, TheaterSchedule.class);
+            } catch (Exception e) {
+                log.error("Json Cinema:{}", cinema.getCinemaId());
+                continue;
+            }
 
             // RunningTime에 필요한 정보 추출
             List<TheaterSchedule.MovieSchedule> schedules = theaterSchedule.getSchedule();
@@ -220,12 +226,14 @@ public class CrawlerServiceV2 {
 
                         String movieShowTm = movieInfo.getShowTm();
                         String openDt = movieInfo.getOpenDt();
+                        String movieNmEn = movieInfo.getMovieNmEn();
                         List<MovieInfoResultResponse.Nation> nations = movieInfo.getNations();
                         List<MovieInfoResultResponse.Genre> genres = movieInfo.getGenres();
                         List<MovieInfoResultResponse.Audit> audits = movieInfo.getAudits();
 
                         movie = new Movie();
                         movie.setName(movieNm);
+                        movie.setEnName(movieNmEn);
                         // 개봉일 추가
                         movie.setShowTm(movieShowTm);
                         movie.setReleaseDate(openDt);
