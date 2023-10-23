@@ -15,7 +15,7 @@ public class Movie {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long movieId;
-    private long movieCode;
+    private String movieCode;
     private String showTm; // 상영 시간
     private String name;
     private String thumbnailUrl;
@@ -24,9 +24,9 @@ public class Movie {
     private String info;
     private String releaseDate; // 개봉일자
     private String genre;
-    private String runningTime;
     private String country;
-    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL)
+    // LazyInitializationException 방지 EAGER 설정
+    @OneToMany(mappedBy = "movie", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     List<MovieRank> movieRanks = new ArrayList<>();
     private LocalDate lastAddedAt;
 
