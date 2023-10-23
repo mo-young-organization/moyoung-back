@@ -18,6 +18,7 @@ public class Movie {
     private String movieCode;
     private String showTm; // 상영 시간
     private String name;
+    private String enName;
     private String thumbnailUrl;
     private String movieRating;
     @Column(length = 1500)
