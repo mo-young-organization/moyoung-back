@@ -15,11 +15,5 @@ public interface RunningTimeRepository extends JpaRepository<RunningTime, Long> 
             Movie movie,
             LocalDateTime startOfDate,
             LocalDateTime endOfDate);
-    List<RunningTime> findRunningTimesByCinemaAndMovieAndStartTimeBetweenAndEarlyMorning(
-            Cinema cinema,
-            Movie movie,
-            LocalDateTime startOfDate,
-            LocalDateTime endOfDate,
-            boolean early
-    );
+    void deleteAllByRecruitingArticlesIsEmptyAndStartTimeBefore(LocalDateTime localDateTime);
 }
