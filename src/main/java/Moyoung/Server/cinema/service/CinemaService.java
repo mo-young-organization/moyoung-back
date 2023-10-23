@@ -80,4 +80,8 @@ public class CinemaService {
 
         return cinemaPlusList;
     }
+
+    public List<Cinema> findCinemaList(double x, double y, double distance) {
+        return cinemaRepository.findCinemasByWithinDistance(x, y, distance);
+    }
 }

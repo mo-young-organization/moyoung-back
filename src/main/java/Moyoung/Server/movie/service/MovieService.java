@@ -7,9 +7,6 @@ import Moyoung.Server.movie.entity.MovieRank;
 import Moyoung.Server.movie.repository.MovieRankRepository;
 import Moyoung.Server.movie.repository.MovieRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -24,11 +21,6 @@ public class MovieService {
 
     public Movie findMovie(long movieId) {
         return findVerifiedMovie(movieId);
-    }
-
-    public Page<Movie> findMoviesByName(String movieName, Integer page) {
-        if (page == null) page = 1;
-        return movieRepository.findAllByNameContainsAndLastAddedAtAfter(movieName, LocalDate.now().minusDays(1), PageRequest.of(page - 1, 25, Sort.by("movieId").descending()));
     }
 
     public List<MovieRank> findMovieRankByDate(LocalDate date) {
