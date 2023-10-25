@@ -40,8 +40,9 @@ public class RecruitingArticleController {
 
     // 비로그인 게시물 불러오기(필터 x), 인터셉터를 활용 안하기 때문에 다른 엔드포인트 활용
     @GetMapping("/recruit-article")
-    public ResponseEntity getRecruitingArticlesNonLogin(@Positive @RequestParam int page) {
-        Page<RecruitingArticle> pageRecruitingArticle = recruitingArticleService.getRecruitingArticleListNonLogin(page);
+    public ResponseEntity getRecruitingArticlesNonLogin(@Positive @RequestParam int page,
+                                                        @RequestParam(required = false) String keyword) {
+        Page<RecruitingArticle> pageRecruitingArticle = recruitingArticleService.getRecruitingArticleListNonLogin(page, keyword);
         List<RecruitingArticle> recruitingArticles = pageRecruitingArticle.getContent();
         return new ResponseEntity<>(new MultiResponseDto<>(recruitingArticleMapper.recruitingArticlesToList(recruitingArticles), pageRecruitingArticle), HttpStatus.OK);
     }
@@ -52,8 +53,9 @@ public class RecruitingArticleController {
                                                 @RequestParam(required = false) Boolean teenager,
                                                 @RequestParam(required = false) Boolean twenties,
                                                 @RequestParam(required = false) Boolean thirties,
-                                                @RequestParam(required = false) Double distance) {
-        Page<RecruitingArticle> pageRecruitingArticle = recruitingArticleService.getRecruitingArticleList(page, gender, teenager, twenties, thirties, distance);
+                                                @RequestParam(required = false) Double distance,
+                                                @RequestParam(required = false) String keyword) {
+        Page<RecruitingArticle> pageRecruitingArticle = recruitingArticleService.getRecruitingArticleList(page, gender, teenager, twenties, thirties, distance, keyword);
         List<RecruitingArticle> recruitingArticles = pageRecruitingArticle.getContent();
         return new ResponseEntity<>(new MultiResponseDto<>(recruitingArticleMapper.recruitingArticlesToList(recruitingArticles), pageRecruitingArticle), HttpStatus.OK);
     }
