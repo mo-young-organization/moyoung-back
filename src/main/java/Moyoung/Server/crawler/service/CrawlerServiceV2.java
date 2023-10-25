@@ -68,7 +68,8 @@ public class CrawlerServiceV2 {
     private String IMAGE_URL = "https://www.kobis.or.kr";
 
     // 영화 순위 크롤링 메서드 (1위 부터 5위까지)
-    @Scheduled(cron = "5 0 0 * * *") // 매일 0시 0분 5초 실행
+    // 0시 0분 5초에 받아오려 했으나 데이터 갱신되려면 시간이 조금 필요한 듯 하다
+    @Scheduled(cron = "0 0 12 * * *") // 매일 12시 0분 0초 실행
     public void crawlMovieRank() throws IOException {
         // 당일 날짜는 정보가 없기 때문에 전일로 진행
         LocalDate date = LocalDate.now().minusDays(1);

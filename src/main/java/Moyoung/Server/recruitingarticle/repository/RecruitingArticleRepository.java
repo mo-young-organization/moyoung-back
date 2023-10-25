@@ -16,12 +16,17 @@ public interface RecruitingArticleRepository extends JpaRepository<RecruitingArt
             "(:genderNum = 1 AND ra.gender = '남자만') OR " +
             "(:genderNum = 2 AND ra.gender = '여자만')) " +
             "AND " +
-            "(ra.age IN :ageList)")
-    Page<RecruitingArticle> findAllByGenderNumAndAgeIn(
+            "(ra.age IN :ageList) " +
+            "AND " +
+            "(:keyword IS NULL OR :keyword = '' OR LOWER(ra.title) LIKE %:keyword%)")
+    Page<RecruitingArticle> findAllByGenderNumAndAgeInAndTitleContaining(
             @Param("genderNum") Integer genderNum,
             @Param("ageList") List<RecruitingArticle.Age> ageList,
+            @Param("keyword") String keyword,
             Pageable pageable
     );
 
-    Page<RecruitingArticle> findAll (Pageable pageable);
+    @Query("SELECT ra FROM RecruitingArticle ra WHERE " +
+            "(:keyword IS NULL OR :keyword = '' OR LOWER(ra.title) LIKE %:keyword%)")
+    Page<RecruitingArticle> findAllByTitleContaining(@Param("keyword") String keyword, Pageable pageable);
 }

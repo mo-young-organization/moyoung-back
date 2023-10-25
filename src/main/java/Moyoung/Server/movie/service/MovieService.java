@@ -27,7 +27,14 @@ public class MovieService {
         if (date == null) {
             date = LocalDate.now();
         }
-        return movieRankRepository.findAllByDate(date.minusDays(1));
+
+        List<MovieRank> movieRankList = movieRankRepository.findAllByDate(date.minusDays(1));
+
+        if (movieRankList.isEmpty()) {
+            return movieRankRepository.findAllByDate(date.minusDays(2));
+        }
+
+        return movieRankList;
     }
   
     private Movie findVerifiedMovie(long movieId) {

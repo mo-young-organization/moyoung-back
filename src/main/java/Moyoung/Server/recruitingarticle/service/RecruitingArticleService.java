@@ -74,12 +74,12 @@ public class RecruitingArticleService  {
     }
 
     // 게시글 리스트 (비로그인)
-    public Page<RecruitingArticle> getRecruitingArticleListNonLogin(int page) {
-        return recruitingArticleRepository.findAll(PageRequest.of(page - 1, 20, Sort.by("recruitingArticleId").descending()));
+    public Page<RecruitingArticle> getRecruitingArticleListNonLogin(int page, String keyword) {
+        return recruitingArticleRepository.findAllByTitleContaining(keyword, PageRequest.of(page - 1, 20, Sort.by("recruitingArticleId").descending()));
     }
 
     // 게시글 리스트
-    public Page<RecruitingArticle> getRecruitingArticleList(int page, Integer genderNum, Boolean teenager, Boolean twenties, Boolean thirties, Double distance) {
+    public Page<RecruitingArticle> getRecruitingArticleList(int page, Integer genderNum, Boolean teenager, Boolean twenties, Boolean thirties, Double distance, String keyword) {
         List<RecruitingArticle.Age> ageList = new ArrayList<>();
         if (teenager != null && teenager) ageList.add(RecruitingArticle.Age.TEENAGER);
         if (twenties != null && twenties) ageList.add(RecruitingArticle.Age.TWENTIES);
@@ -91,7 +91,7 @@ public class RecruitingArticleService  {
             ageList.add(RecruitingArticle.Age.THIRTIES);
         }
 
-        return recruitingArticleRepository.findAllByGenderNumAndAgeIn(genderNum, ageList, PageRequest.of(page - 1, 20, Sort.by("recruitingArticleId").descending()));
+        return recruitingArticleRepository.findAllByGenderNumAndAgeInAndTitleContaining(genderNum, ageList, keyword, PageRequest.of(page - 1, 20, Sort.by("recruitingArticleId").descending()));
     }
 
     // 게시글 삭제
