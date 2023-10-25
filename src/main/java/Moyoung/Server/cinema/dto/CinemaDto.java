@@ -15,8 +15,8 @@ public class CinemaDto {
         private String brand;
         private String name;
         private String address;
-        private double latitude;
-        private double longitude;
+        private double x;
+        private double y;
         private List<ScreenInfo> screenInfoList;
     }
 
