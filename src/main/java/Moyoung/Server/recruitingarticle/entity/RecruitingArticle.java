@@ -28,10 +28,10 @@ public class RecruitingArticle {
     @JoinColumn(name = "running_time_id")
     private RunningTime runningTime;
 
-    @OneToMany(mappedBy = "recruitingArticle")
+    @OneToMany(mappedBy = "recruitingArticle", cascade = CascadeType.REMOVE)
     private List<ChatRoomInfo> chatRoomInfos = new ArrayList<>();
 
-    @OneToMany(mappedBy = "recruitingArticle", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "recruitingArticle", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private List<Chat> chats = new ArrayList<>();
 
     private String title;
@@ -46,8 +46,10 @@ public class RecruitingArticle {
     // 추가 정보 비정규화
     private String cinemaRegion;
     private String cinemaName;
+    private String cinemaBrand;
     private String movieName;
     private String movieThumbnailUrl;
+    private String movieRating;
 
     public void setRunningTime(RunningTime runningTime) {
         this.runningTime = runningTime;
