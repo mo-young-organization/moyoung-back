@@ -50,8 +50,11 @@ public class RecruitingArticleService  {
         recruitingArticle.setRunningTime(runningTime);
         recruitingArticle.setCinemaRegion(cinema.getRegion_1());
         recruitingArticle.setCinemaName(cinema.getName());
+        recruitingArticle.setCinemaBrand(cinema.getBrand());
         recruitingArticle.setMovieName(movie.getName());
         recruitingArticle.setMovieThumbnailUrl(movie.getThumbnailUrl());
+        recruitingArticle.setMovieRating(movie.getMovieRating());
+        recruitingArticle.setCurrentNum(1);
 
         recruitingArticleRepository.save(recruitingArticle);
         chatRoomInfoRepository.save(chatRoomInfo);

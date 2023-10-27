@@ -28,11 +28,14 @@ public class RecruitingArticleDto {
         private long recruitingArticleId;
         private String writerDisplayName;
         private String writerAge;
+        private String writerGender;
         private String title;
         private String cinemaRegion;
         private String cinemaName;
+        private String cinemaBrand;
         private String movieThumbnailUrl;
         private String movieName;
+        private String movieRating;
         private LocalDateTime startTime;
         private String screenInfo;
         private int maxNum;
