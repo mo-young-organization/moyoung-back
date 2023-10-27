@@ -1,5 +1,6 @@
 package Moyoung.Server.member.entity;
 
+import Moyoung.Server.recruitingarticle.entity.RecruitingArticle;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -24,6 +25,8 @@ public class Member {
     private boolean gender;
     @ElementCollection(fetch = FetchType.EAGER)
     private List<String> roles = new ArrayList<>();
+    @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE)
+    List<RecruitingArticle> recruitingArticleList = new ArrayList<>();
 
     public enum Age {
         NON("설정이 필요합니다."),
