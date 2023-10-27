@@ -87,4 +87,11 @@ public class MemberService {
 
         return findedMember;
     }
+
+    // 회원 삭제 메서드
+    public void deleteMember(long memberId) {
+        Member member = findVerifiedMember(memberId);
+        memberRepository.delete(member);
+    }
+
 }
