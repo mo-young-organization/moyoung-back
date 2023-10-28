@@ -53,9 +53,12 @@ public class RecruitingArticleController {
                                                 @RequestParam(required = false) Boolean teenager,
                                                 @RequestParam(required = false) Boolean twenties,
                                                 @RequestParam(required = false) Boolean thirties,
+                                                @RequestParam double x,
+                                                @RequestParam double y,
                                                 @RequestParam(required = false) Double distance,
-                                                @RequestParam(required = false) String keyword) {
-        Page<RecruitingArticle> pageRecruitingArticle = recruitingArticleService.getRecruitingArticleList(page, gender, teenager, twenties, thirties, distance, keyword);
+                                                @RequestParam(required = false) String keyword,
+                                                @RequestParam(required = false) Boolean sort) {
+        Page<RecruitingArticle> pageRecruitingArticle = recruitingArticleService.getRecruitingArticleList(page, gender, teenager, twenties, thirties, x, y, distance, keyword, sort);
         List<RecruitingArticle> recruitingArticles = pageRecruitingArticle.getContent();
         return new ResponseEntity<>(new MultiResponseDto<>(recruitingArticleMapper.recruitingArticlesToList(recruitingArticles), pageRecruitingArticle), HttpStatus.OK);
     }
