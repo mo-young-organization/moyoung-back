@@ -24,7 +24,7 @@ jobs:
           aws-region: ap-northeast-2
 
       - name: SSH Commands
-        uses: appleboy/ssh-action@v1.0.0
+        uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ secrets.AWS_SSH_HOST }}
           username: ${{ secrets.AWS_SSH_USERNAME }}
