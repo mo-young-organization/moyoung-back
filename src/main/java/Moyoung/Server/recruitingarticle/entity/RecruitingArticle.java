@@ -47,6 +47,8 @@ public class RecruitingArticle {
     private String cinemaRegion;
     private String cinemaName;
     private String cinemaBrand;
+    private double x;
+    private double y;
     private String movieName;
     private String movieThumbnailUrl;
     private String movieRating;
