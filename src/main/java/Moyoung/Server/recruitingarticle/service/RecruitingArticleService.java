@@ -51,6 +51,8 @@ public class RecruitingArticleService  {
         recruitingArticle.setCinemaRegion(cinema.getRegion_1());
         recruitingArticle.setCinemaName(cinema.getName());
         recruitingArticle.setCinemaBrand(cinema.getBrand());
+        recruitingArticle.setX(cinema.getX());
+        recruitingArticle.setY(cinema.getY());
         recruitingArticle.setMovieName(movie.getName());
         recruitingArticle.setMovieThumbnailUrl(movie.getThumbnailUrl());
         recruitingArticle.setMovieRating(movie.getMovieRating());
@@ -82,7 +84,7 @@ public class RecruitingArticleService  {
     }
 
     // 게시글 리스트
-    public Page<RecruitingArticle> getRecruitingArticleList(int page, Integer genderNum, Boolean teenager, Boolean twenties, Boolean thirties, Double distance, String keyword) {
+    public Page<RecruitingArticle> getRecruitingArticleList(int page, Integer genderNum, Boolean teenager, Boolean twenties, Boolean thirties, double x, double y, Double distance, String keyword, Boolean sort) {
         List<RecruitingArticle.Age> ageList = new ArrayList<>();
         if (teenager != null && teenager) ageList.add(RecruitingArticle.Age.TEENAGER);
         if (twenties != null && twenties) ageList.add(RecruitingArticle.Age.TWENTIES);
@@ -94,7 +96,10 @@ public class RecruitingArticleService  {
             ageList.add(RecruitingArticle.Age.THIRTIES);
         }
 
-        return recruitingArticleRepository.findAllByGenderNumAndAgeInAndTitleContaining(genderNum, ageList, keyword, PageRequest.of(page - 1, 20, Sort.by("recruitingArticleId").descending()));
+        if (sort == null || !sort) {
+            return recruitingArticleRepository.findAllByGenderNumAndAgeInAndTitleContaining(genderNum, ageList, x, y, distance, keyword, PageRequest.of(page - 1, 20, Sort.by("recruitingArticleId").descending()));
+        }
+        return recruitingArticleRepository.findAllByGenderNumAndAgeInAndTitleContainingUseDistance(genderNum, ageList, x, y, distance, keyword, PageRequest.of(page - 1, 20));
     }
 
     // 게시글 삭제
