@@ -30,10 +30,11 @@ public class ChatRoomInfo {
     public ChatRoomInfo() {
     }
     @Builder
-    public ChatRoomInfo(RecruitingArticle recruitingArticle, Member member, LocalDateTime entryTime) {
+    public ChatRoomInfo(RecruitingArticle recruitingArticle, Member member, LocalDateTime entryTime, LocalDateTime lastMessageAt) {
         this.recruitingArticle = recruitingArticle;
         this.member = member;
         this.entryTime = entryTime;
+        this.lastMessageAt = lastMessageAt;
     }
 
     public void resetUnreadCount() {
