@@ -42,7 +42,7 @@ public class RecruitingArticleService  {
     public void registerRecruitingArticle(RecruitingArticle recruitingArticle, long memberId) {
         Member member = memberService.findVerifiedMember(memberId);
         RunningTime runningTime = runningTimeService.findVerifiedRunningTime(recruitingArticle.getRunningTime().getRunningTimeId());
-        ChatRoomInfo chatRoomInfo = ChatRoomInfo.builder().member(member).recruitingArticle(recruitingArticle).entryTime(LocalDateTime.now()).build();
+        ChatRoomInfo chatRoomInfo = ChatRoomInfo.builder().member(member).recruitingArticle(recruitingArticle).entryTime(LocalDateTime.now()).lastMessageAt(LocalDateTime.now()).build();
         Movie movie = runningTime.getMovie();
         Cinema cinema = runningTime.getCinema();
         recruitingArticle.setMember(member);
