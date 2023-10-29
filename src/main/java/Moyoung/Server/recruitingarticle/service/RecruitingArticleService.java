@@ -124,7 +124,7 @@ public class RecruitingArticleService  {
         if (chatRoomInfoRepository.findByMemberMemberIdAndRecruitingArticleRecruitingArticleId(memberId, recruitingArticleId).isPresent()) {
             throw new BusinessLogicException(ExceptionCode.ALREADY_ENTERED);
         }
-        ChatRoomInfo chatRoomInfo = ChatRoomInfo.builder().member(member).recruitingArticle(recruitingArticle).entryTime(LocalDateTime.now()).build();
+        ChatRoomInfo chatRoomInfo = ChatRoomInfo.builder().member(member).recruitingArticle(recruitingArticle).entryTime(LocalDateTime.now()).lastMessageAt(LocalDateTime.now()).build();
         recruitingArticle.addChatRoomInfo(chatRoomInfo);
         recruitingArticle.setCurrentNum(recruitingArticle.getCurrentNum() + 1);
 
