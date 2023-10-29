@@ -70,11 +70,19 @@ public class RecruitingArticleController {
         return new ResponseEntity<>("게시글 삭제가 완료되었습니다.", HttpStatus.OK);
     }
 
-    @PostMapping("/recruit/{recruit-id}")
+    @PostMapping("/recruit/{recruit-id}/enter")
     public ResponseEntity enterArticle(@PathVariable("recruit-id") long recruitingArticleId) {
         long authenticationMemberId = JwtParseInterceptor.getAuthenticatedMemberId();
 
         recruitingArticleService.enterRecruit(recruitingArticleId, authenticationMemberId);
         return new ResponseEntity<>("모집글 입장이 완료되었습니다.", HttpStatus.OK);
+    }
+
+    @DeleteMapping("/recruit/{recruit-id}/leave")
+    public ResponseEntity leaveArticle(@PathVariable("recruit-id") long recruitingArticleId) {
+        long authenticationMemberId = JwtParseInterceptor.getAuthenticatedMemberId();
+
+        recruitingArticleService.leaveRecruit(recruitingArticleId, authenticationMemberId);
+        return new ResponseEntity<>("모집글 퇴장이 완료되었습니다.", HttpStatus.OK);
     }
 }

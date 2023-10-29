@@ -52,6 +52,11 @@ public class ChatService {
             });
         }
 
+        if (chat.getType().equals(Chat.Type.EXIT)) {
+            ChatRoomInfo chatRoomInfo = findChatRoomInfo(recruitingArticle.getRecruitingArticleId(), member.getMemberId());
+            chatRoomInfoRepository.delete(chatRoomInfo);
+        }
+
         return chatRepository.save(chat);
 
     }
