@@ -1,5 +1,6 @@
 package Moyoung.Server.chat.controller;
 
+import Moyoung.Server.auth.interceptor.JwtParseInterceptor;
 import Moyoung.Server.chat.dto.ChatDto;
 import Moyoung.Server.chat.entity.Chat;
 import Moyoung.Server.chat.entity.ChatRoomInfo;
@@ -8,6 +9,8 @@ import Moyoung.Server.chat.service.ChatService;
 import Moyoung.Server.member.dto.MemberDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
@@ -44,10 +47,11 @@ public class ChatController {
         operations.convertAndSend("/sub/chatroom/" + recruitArticleId + "/load", chatResponses);
     }
 
-    @MessageMapping("/chatroom-list")
-    public void loadChatRoomList(MemberDto.MemberId memberId) {
-        List<ChatRoomInfo> chatRoomInfoList = chatService.getChatRoomList(memberId.getMemberId());
-        List<ChatDto.ChatRoomResponse> chatRoomResponses = chatMapper.chatRoomInfosToList(chatRoomInfoList);
-        operations.convertAndSend("/sub/chatroom/" + memberId + "/load", chatRoomResponses);
+    @GetMapping("/chatroom")
+    public ResponseEntity loadChatRoomList() {
+        long authenticationMemberId = JwtParseInterceptor.getAuthenticatedMemberId();
+        List<ChatRoomInfo> chatRoomInfoList = chatService.getChatRoomList(authenticationMemberId);
+
+        return new ResponseEntity<>(chatMapper.chatRoomInfosToList(chatRoomInfoList), HttpStatus.OK);
     }
 }
