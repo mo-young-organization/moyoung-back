@@ -39,12 +39,12 @@ public class ChatController {
     }
 
     // 메세지 불러오기
-    // 보안 문제 때문에 세션을 통한 토큰 관리 방법 강구
-    @MessageMapping("/recruit/{recruit-id}/chatroom/load")
-    public void loadMessage(@DestinationVariable("recruit-id") long recruitArticleId, MemberDto.MemberId memberId) {
-        List<Chat> chatList = chatService.getChatMessage(recruitArticleId, memberId.getMemberId());
-        List<ChatDto.Response> chatResponses = chatMapper.chatsToList(chatList);
-        operations.convertAndSend("/sub/chatroom/" + recruitArticleId + "/load", chatResponses);
+    @GetMapping("/chatroom/{chatroom-id}")
+    public ResponseEntity loadMessage(@PathVariable("chatroom-id") long recruitArticleId) {
+        long authenticationMemberId = JwtParseInterceptor.getAuthenticatedMemberId();
+        List<Chat> chatList = chatService.getChatMessage(recruitArticleId, authenticationMemberId);
+
+        return new ResponseEntity<>(chatMapper.chatsToList(chatList), HttpStatus.OK);
     }
 
     @GetMapping("/chatroom")
