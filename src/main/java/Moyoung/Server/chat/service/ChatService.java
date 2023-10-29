@@ -84,7 +84,7 @@ public class ChatService {
 
         // 최근 메세지가 추가된 시간을 기준으로 정렬
         return chatRoomInfoList.stream()
-                .sorted(Comparator.comparing(ChatRoomInfo::getLastMessageAt))
+                .sorted(Comparator.comparing(ChatRoomInfo::getLastMessageAt).reversed())
                 .collect(Collectors.toList());
     }
 
