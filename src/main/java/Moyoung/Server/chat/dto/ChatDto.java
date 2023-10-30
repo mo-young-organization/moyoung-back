@@ -27,6 +27,10 @@ public class ChatDto {
     @Builder
     public static class ChatRoomResponse {
         private long recruitingArticleId;
+        private String title;
+        private String movieThumbnailUrl;
+        private String cinemaName;
+        private String cinemaBrand;
         private int unreadCount;
         private String lastMessage;
         private LocalDateTime lastMessageAt;
