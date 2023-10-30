@@ -67,6 +67,11 @@ public interface ControllerHelper<T> {
                 .accept(MediaType.APPLICATION_JSON);
     }
 
+    default RequestBuilder getRequestBuilder(String url) {
+        return get(url)
+                .accept(MediaType.APPLICATION_JSON);
+    }
+
     default RequestBuilder getRequestBuilderWithParams(String url, long resourceId, MultiValueMap<String, String> params) {
         return get(url, resourceId)
                 .params(params)
