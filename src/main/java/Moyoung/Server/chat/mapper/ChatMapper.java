@@ -34,8 +34,15 @@ public interface ChatMapper {
     }
 
     default ChatDto.ChatRoomResponse chatRoomInfoToResponse(ChatRoomInfo chatRoomInfo) {
+        RecruitingArticle recruitingArticle = chatRoomInfo.getRecruitingArticle();
         return ChatDto.ChatRoomResponse.builder()
-                .recruitingArticleId(chatRoomInfo.getRecruitingArticle().getRecruitingArticleId())
+                .recruitingArticleId(recruitingArticle.getRecruitingArticleId())
+                .title(recruitingArticle.getTitle())
+                .maxNum(recruitingArticle.getMaxNum())
+                .currentNum(recruitingArticle.getCurrentNum())
+                .movieThumbnailUrl(recruitingArticle.getMovieThumbnailUrl())
+                .cinemaName(recruitingArticle.getCinemaName())
+                .cinemaBrand(recruitingArticle.getCinemaBrand())
                 .unreadCount(chatRoomInfo.getUnreadCount())
                 .lastMessage(chatRoomInfo.getLastMessage())
                 .lastMessageAt(chatRoomInfo.getLastMessageAt()).build();
