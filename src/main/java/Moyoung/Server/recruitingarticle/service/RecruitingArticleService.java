@@ -142,13 +142,20 @@ public class RecruitingArticleService  {
     }
 
     // 게시글 퇴장
-    public void leaveSession(String recruitingArticleId, String senderDisplayName) {
-        long longRecruitingArticleId = Long.parseLong(recruitingArticleId);
-        RecruitingArticle foundRecruitingArticle = findVerifiedRecruitingArticle(longRecruitingArticleId);
-        Member member = memberService.findMemberByDisplayName(senderDisplayName);
+    public void leaveRecruit(long recruitingArticleId, long memberId) {
+        RecruitingArticle foundRecruitingArticle = findVerifiedRecruitingArticle(recruitingArticleId);
+        Member member = memberService.findVerifiedMember(memberId);
         foundRecruitingArticle.setCurrentNum(foundRecruitingArticle.getCurrentNum() - 1);
-
         recruitingArticleRepository.save(foundRecruitingArticle);
+
+        Chat chat = chatService.saveChat(Chat.builder()
+                .chatTime(LocalDateTime.now())
+                .type(Chat.Type.EXIT)
+                .content(member.getDisplayName() + " 님이 퇴장했습니다.")
+                .sender(member)
+                .recruitingArticle(foundRecruitingArticle).build());
+
+        operations.convertAndSend("/sub/chatroom/" + recruitingArticleId, chatMapper.chatToResponse(chat));
     }
 
     // 검증된 게시글 찾기
