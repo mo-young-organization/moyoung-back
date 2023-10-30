@@ -38,6 +38,8 @@ public interface ChatMapper {
         return ChatDto.ChatRoomResponse.builder()
                 .recruitingArticleId(recruitingArticle.getRecruitingArticleId())
                 .title(recruitingArticle.getTitle())
+                .maxNum(recruitingArticle.getMaxNum())
+                .currentNum(recruitingArticle.getCurrentNum())
                 .movieThumbnailUrl(recruitingArticle.getMovieThumbnailUrl())
                 .cinemaName(recruitingArticle.getCinemaName())
                 .cinemaBrand(recruitingArticle.getCinemaBrand())
