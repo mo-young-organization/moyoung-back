@@ -79,8 +79,8 @@ public class RecruitingArticleService  {
     }
 
     // 게시글 리스트 (비로그인)
-    public Page<RecruitingArticle> getRecruitingArticleListNonLogin(int page, String keyword) {
-        return recruitingArticleRepository.findAllByTitleContaining(keyword, PageRequest.of(page - 1, 20, Sort.by("recruitingArticleId").descending()));
+    public Page<RecruitingArticle> getRecruitingArticleListNonLogin(int page, int size, double x, double y, String keyword) {
+        return recruitingArticleRepository.findAllByTitleContaining(keyword, x, y, PageRequest.of(page - 1, size, Sort.by("recruitingArticleId").descending()));
     }
 
     // 게시글 리스트
