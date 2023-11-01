@@ -94,4 +94,9 @@ public class MemberService {
         memberRepository.delete(member);
     }
 
+    // JwtVerificationFilter
+    public Optional<Member> findVerifiedMemberById(String id) {
+        return memberRepository.findById(id);
+    }
+
 }
