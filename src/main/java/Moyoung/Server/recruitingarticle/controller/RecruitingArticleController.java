@@ -41,8 +41,11 @@ public class RecruitingArticleController {
     // 비로그인 게시물 불러오기(필터 x), 인터셉터를 활용 안하기 때문에 다른 엔드포인트 활용
     @GetMapping("/recruit-article")
     public ResponseEntity getRecruitingArticlesNonLogin(@Positive @RequestParam int page,
+                                                        @Positive @RequestParam int size,
+                                                        @RequestParam double x,
+                                                        @RequestParam double y,
                                                         @RequestParam(required = false) String keyword) {
-        Page<RecruitingArticle> pageRecruitingArticle = recruitingArticleService.getRecruitingArticleListNonLogin(page, keyword);
+        Page<RecruitingArticle> pageRecruitingArticle = recruitingArticleService.getRecruitingArticleListNonLogin(page, size, x, y, keyword);
         List<RecruitingArticle> recruitingArticles = pageRecruitingArticle.getContent();
         return new ResponseEntity<>(new MultiResponseDto<>(recruitingArticleMapper.recruitingArticlesToList(recruitingArticles), pageRecruitingArticle), HttpStatus.OK);
     }

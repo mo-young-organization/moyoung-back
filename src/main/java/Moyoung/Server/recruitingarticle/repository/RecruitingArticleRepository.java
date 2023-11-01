@@ -54,6 +54,12 @@ public interface RecruitingArticleRepository extends JpaRepository<RecruitingArt
     );
 
     @Query("SELECT ra FROM RecruitingArticle ra WHERE " +
+            "ST_DISTANCE_SPHERE(POINT(ra.x, ra.y), POINT(:x, :y)) <= 3000 " +
+            "AND " +
             "(:keyword IS NULL OR :keyword = '' OR LOWER(ra.title) LIKE %:keyword%)")
-    Page<RecruitingArticle> findAllByTitleContaining(@Param("keyword") String keyword, Pageable pageable);
+    Page<RecruitingArticle> findAllByTitleContaining(
+            @Param("keyword") String keyword,
+            @Param("x") double x,
+            @Param("y") double y,
+            Pageable pageable);
 }
