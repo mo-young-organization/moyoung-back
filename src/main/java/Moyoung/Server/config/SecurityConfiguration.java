@@ -7,7 +7,6 @@ import Moyoung.Server.auth.interceptor.JwtParseInterceptor;
 import Moyoung.Server.auth.jwt.JwtTokenizer;
 import Moyoung.Server.auth.jwt.TokenService;
 import Moyoung.Server.auth.utils.JwtUtils;
-import Moyoung.Server.member.repository.MemberRepository;
 import Moyoung.Server.member.service.MemberService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,12 +34,9 @@ public class SecurityConfiguration implements WebMvcConfigurer {
 
     private final MemberService memberService;
     private final TokenService tokenService;
-    private final MemberRepository memberRepository;
-
-    public SecurityConfiguration(@Lazy MemberService memberService, @Lazy TokenService tokenService, MemberRepository memberRepository) {
+    public SecurityConfiguration(@Lazy MemberService memberService, @Lazy TokenService tokenService) {
         this.memberService = memberService;
         this.tokenService = tokenService;
-        this.memberRepository = memberRepository;
     }
 
     @Bean
@@ -112,7 +108,7 @@ public class SecurityConfiguration implements WebMvcConfigurer {
             jwtAuthenticationFilter.setAuthenticationSuccessHandler(new MemberAuthenticationSuccessHandler());
             jwtAuthenticationFilter.setAuthenticationFailureHandler(new MemberAuthenticationFailureHandler());
 
-            JwtVerificationFilter jwtVerificationFilter = new JwtVerificationFilter(jwtUtils(), tokenService, memberRepository);
+            JwtVerificationFilter jwtVerificationFilter = new JwtVerificationFilter(jwtUtils(), tokenService, memberService);
 
             builder
                     .addFilter(jwtAuthenticationFilter)

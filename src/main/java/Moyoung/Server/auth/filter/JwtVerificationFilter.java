@@ -3,7 +3,7 @@ package Moyoung.Server.auth.filter;
 import Moyoung.Server.auth.jwt.TokenService;
 import Moyoung.Server.auth.utils.JwtUtils;
 import Moyoung.Server.member.entity.Member;
-import Moyoung.Server.member.repository.MemberRepository;
+import Moyoung.Server.member.service.MemberService;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,7 @@ import java.util.Optional;
 public class JwtVerificationFilter extends OncePerRequestFilter {
     private final JwtUtils jwtUtils;
     private final TokenService tokenService;
-    private final MemberRepository memberRepository;
+    private final MemberService memberService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws IOException, ServletException {
@@ -55,7 +55,7 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
         if (refreshTokenHeader != null && refreshTokenHeader.startsWith("Bearer ")) {
             String refreshToken = refreshTokenHeader.substring(7);
             try {
-                Optional<Member> optionalMember = memberRepository.findById(jwtUtils.getUserIdFromToken(refreshToken));
+                Optional<Member> optionalMember = memberService.findVerifiedMemberById(jwtUtils.getUserIdFromToken(refreshToken));
                 if (optionalMember.isPresent()) {
                     Member member = optionalMember.get();
                     String newAccessToken = tokenService.delegateAccessToken(member);

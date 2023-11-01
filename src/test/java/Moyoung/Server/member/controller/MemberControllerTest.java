@@ -6,7 +6,6 @@ import Moyoung.Server.helper.StubData;
 import Moyoung.Server.member.dto.MemberDto;
 import Moyoung.Server.member.entity.Member;
 import Moyoung.Server.member.mapper.MemberMapper;
-import Moyoung.Server.member.repository.MemberRepository;
 import Moyoung.Server.member.service.MemberService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -38,8 +37,6 @@ public class MemberControllerTest implements MemberControllerHelper {
     private MockMvc mockMvc;
     @Autowired
     private JwtTokenizer jwtTokenizer;
-    @MockBean
-    private MemberRepository memberRepository;
     @MockBean
     private MemberService memberService;
     @MockBean

@@ -3,7 +3,6 @@ package Moyoung.Server.movie.controller;
 import Moyoung.Server.cinema.service.CinemaService;
 import Moyoung.Server.helper.MovieControllerHelper;
 import Moyoung.Server.helper.StubData;
-import Moyoung.Server.member.repository.MemberRepository;
 import Moyoung.Server.movie.mapper.MovieMapper;
 import Moyoung.Server.movie.service.MovieService;
 import Moyoung.Server.runningtime.service.RunningTimeService;
@@ -35,8 +34,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class MovieControllerTest implements MovieControllerHelper {
     @Autowired
     private MockMvc mockMvc;
-    @MockBean
-    private MemberRepository memberRepository;
     @MockBean
     private MovieService movieService;
     @MockBean
