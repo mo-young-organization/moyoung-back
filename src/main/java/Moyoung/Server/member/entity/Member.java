@@ -22,7 +22,7 @@ public class Member {
     private String password;
     private String displayName;
     private Age age = Age.NON;
-    private boolean gender;
+    private Boolean gender;
     @ElementCollection(fetch = FetchType.EAGER)
     private List<String> roles = new ArrayList<>();
     @OneToMany(mappedBy = "member", cascade = CascadeType.REMOVE)
