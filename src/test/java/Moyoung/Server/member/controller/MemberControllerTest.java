@@ -71,13 +71,31 @@ public class MemberControllerTest implements MemberControllerHelper {
     @DisplayName("Info Insert Test")
     public void postInformationTest() throws Exception {
         // given
-        given(mapper.infoToMember(Mockito.any(MemberDto.Info.class))).willReturn(new Member());
+        given(mapper.postInfoToMember(Mockito.any(MemberDto.PostInfo.class))).willReturn(new Member());
 
         given(memberService.registerInformation(Mockito.anyLong(), Mockito.any(Member.class))).willReturn("test");
 
         // when
         ResultActions actions =
                 mockMvc.perform(postRequestBuilder(INFO_URL, StubData.getPostInfoContent(), accessToken));
+
+        // then
+        actions
+                .andExpect(status().isOk())
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("회원정보 수정 테스트")
+    public void patchInformationTest() throws Exception {
+        // given
+        given(mapper.patchInfoToMember(Mockito.any(MemberDto.PatchInfo.class))).willReturn(new Member());
+
+        given(memberService.updateInformation(Mockito.anyLong(), Mockito.any(Member.class))).willReturn("test");
+
+        // when
+        ResultActions actions =
+                mockMvc.perform(patchRequestBuilder(INFO_URL, StubData.getPatchInfoContent(), accessToken));
 
         // then
         actions

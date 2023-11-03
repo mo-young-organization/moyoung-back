@@ -43,9 +43,19 @@ public class StubData {
 
     public static String getPostInfoContent() {
         Gson gson = new Gson();
-        MemberDto.Info info = new MemberDto.Info();
+        MemberDto.PostInfo info = new MemberDto.PostInfo();
         info.setDisplayName("test");
-        info.setGender(true);
+        info.setGender(Boolean.TRUE);
+        info.setAge(1);
+
+        return gson.toJson(info);
+    }
+
+    public static String getPatchInfoContent() {
+        Gson gson = new Gson();
+        MemberDto.PatchInfo info = new MemberDto.PatchInfo();
+        info.setDisplayName("test");
+        info.setGender(Boolean.TRUE);
         info.setAge(1);
 
         return gson.toJson(info);

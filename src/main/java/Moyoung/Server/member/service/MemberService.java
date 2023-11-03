@@ -29,8 +29,25 @@ public class MemberService {
         verifyExistingDisplayName(requestBody.getDisplayName());
         Member member = findVerifiedMember(memberId);
         member.setDisplayName(requestBody.getDisplayName());
-        member.setGender(requestBody.isGender());
+        member.setGender(requestBody.getGender());
         member.setAge(requestBody.getAge());
+        memberRepository.save(member);
+
+        return member.getDisplayName();
+    }
+
+    // 회원 정보 수정
+    public String updateInformation(Long memberId, Member requestBody) {
+        Member member = findVerifiedMember(memberId);
+        Optional.ofNullable(requestBody.getDisplayName())
+                .ifPresent(displayName -> {
+                    verifyExistingDisplayName(displayName);
+                    member.setDisplayName(displayName);
+                });
+        Optional.ofNullable(requestBody.getGender())
+                .ifPresent(gender -> member.setGender(gender));
+        Optional.ofNullable(requestBody.getAge())
+                .ifPresent(age -> member.setAge(age));
         memberRepository.save(member);
 
         return member.getDisplayName();
