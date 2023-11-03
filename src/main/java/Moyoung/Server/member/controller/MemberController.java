@@ -23,9 +23,16 @@ public class MemberController {
     }
 
     @PostMapping("/info")
-    public ResponseEntity postInformation(@Validated @RequestBody MemberDto.Info requestBody) {
+    public ResponseEntity postInformation(@Validated @RequestBody MemberDto.PostInfo requestBody) {
         long authenticationMemberId = JwtParseInterceptor.getAuthenticatedMemberId();
-        String displayName = memberService.registerInformation(authenticationMemberId, memberMapper.infoToMember(requestBody));
+        String displayName = memberService.registerInformation(authenticationMemberId, memberMapper.postInfoToMember(requestBody));
+        return new ResponseEntity<>(displayName, HttpStatus.OK);
+    }
+
+    @PatchMapping("/info")
+    public ResponseEntity patchInformation(@Validated @RequestBody MemberDto.PatchInfo requestBody) {
+        long authenticationMemberId = JwtParseInterceptor.getAuthenticatedMemberId();
+        String displayName = memberService.updateInformation(authenticationMemberId, memberMapper.patchInfoToMember(requestBody));
         return new ResponseEntity<>(displayName, HttpStatus.OK);
     }
 
