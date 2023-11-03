@@ -94,7 +94,7 @@ public interface RecruitingArticleMapper {
                 .recruitingArticleId(recruitingArticle.getRecruitingArticleId())
                 .writerDisplayName(writer.getDisplayName())
                 .writerAge(writer.getAge().getAge())
-                .writerGender(writer.isGender() ? "남성" : "여성")
+                .writerGender(writer.getGender() ? "남성" : "여성")
                 .title(recruitingArticle.getTitle())
                 .cinemaRegion(recruitingArticle.getCinemaRegion())
                 .cinemaName(recruitingArticle.getCinemaName())

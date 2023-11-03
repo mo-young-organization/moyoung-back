@@ -1,5 +1,6 @@
 package Moyoung.Server.member.dto;
 
+import Moyoung.Server.validator.NotSpace;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,7 +28,7 @@ public class MemberDto {
 
     @Getter
     @Setter
-    public static class Info {
+    public static class PostInfo {
         @NotBlank
         @Pattern(regexp = "^[A-Za-z가-힣]{2,5}$|^$")
         private String displayName;
@@ -36,6 +37,18 @@ public class MemberDto {
         @NotNull
         private Integer age;
     }
+
+    @Getter
+    @Setter
+    public static class PatchInfo {
+        @NotSpace
+        @Pattern(regexp = "^[A-Za-z가-힣]{2,5}$|^$")
+        private String displayName;
+        private Boolean gender;
+        private Integer age;
+    }
+
+
 
     @Getter
     @Setter
