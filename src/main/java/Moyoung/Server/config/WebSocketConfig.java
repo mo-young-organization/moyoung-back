@@ -2,6 +2,7 @@ package Moyoung.Server.config;
 
 import Moyoung.Server.stomp.StompHandler;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
@@ -12,6 +13,19 @@ import org.springframework.web.socket.config.annotation.*;
 @RequiredArgsConstructor
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private final StompHandler stompHandler;
+
+    @Value("${moyoung.default}")
+    private String url;
+
+    @Value("${moyoung.local}")
+    private String localUrl;
+
+    @Value("${moyoung.moyoung}")
+    private String moyoungUrl;
+
+    @Value("${moyoung.apic}")
+    private String apicUrl;
+
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         // 메세지 구독 요청 url -> 메세지 받을 때
@@ -22,7 +36,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws").setAllowedOrigins("https://apic.app", "http://localhost:5173");//.withSockJS();
+        registry.addEndpoint("/ws").setAllowedOrigins(url, apicUrl, localUrl, moyoungUrl);//.withSockJS();
 //        registry.addEndpoint("/ws").setAllowedOrigins("*")
 //                .withSockJS();
     }

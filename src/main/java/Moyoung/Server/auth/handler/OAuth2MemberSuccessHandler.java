@@ -9,10 +9,12 @@ import Moyoung.Server.member.entity.Member;
 import Moyoung.Server.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
+import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.ServletException;
@@ -29,10 +31,14 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Slf4j
 @RequiredArgsConstructor
+@Component
 public class OAuth2MemberSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final MemberService memberService;
     private final TokenService tokenService;
+
+    @Value("${moyoung.callback}")
+    private String url;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -96,7 +102,7 @@ public class OAuth2MemberSuccessHandler extends SimpleUrlAuthenticationSuccessHa
 
     // 콜백 Uri
     private URI createUri(boolean userInfoCheck, String accessToken, String refreshToken, long memberId, String displayName, String accessTokenExpiration, String refreshTokenExpiration) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("http://localhost:5173/callback")
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url)
                 .queryParam("user", userInfoCheck)
                 .queryParam("Authorization", accessToken)
                 .queryParam("Refresh", refreshToken)
@@ -109,7 +115,7 @@ public class OAuth2MemberSuccessHandler extends SimpleUrlAuthenticationSuccessHa
 
     // 콜백 Uri
     private URI createInterestUri(boolean userInfoCheck, String accessToken, String refreshToken, long memberId, String accessTokenExpiration, String refreshTokenExpiration) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("http://localhost:5173/callback")
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url)
                 .queryParam("user", userInfoCheck)
                 .queryParam("Authorization", accessToken)
                 .queryParam("Refresh", refreshToken)
