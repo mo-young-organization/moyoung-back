@@ -31,15 +31,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Slf4j
 @RequiredArgsConstructor
-@Component
 public class OAuth2MemberSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final MemberService memberService;
     private final TokenService tokenService;
     private final String url;
-
-    @Value("${moyoung.callback}")
-    private String url;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
