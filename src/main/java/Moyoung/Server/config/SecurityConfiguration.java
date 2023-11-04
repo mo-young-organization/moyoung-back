@@ -8,6 +8,7 @@ import Moyoung.Server.auth.jwt.JwtTokenizer;
 import Moyoung.Server.auth.jwt.TokenService;
 import Moyoung.Server.auth.utils.JwtUtils;
 import Moyoung.Server.member.service.MemberService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
@@ -34,10 +35,26 @@ public class SecurityConfiguration implements WebMvcConfigurer {
 
     private final MemberService memberService;
     private final TokenService tokenService;
-    public SecurityConfiguration(@Lazy MemberService memberService, @Lazy TokenService tokenService) {
+    private final OAuth2MemberSuccessHandler oAuth2MemberSuccessHandler;
+    public SecurityConfiguration(@Lazy MemberService memberService, @Lazy TokenService tokenService, @Lazy OAuth2MemberSuccessHandler oAuth2MemberSuccessHandler) {
         this.memberService = memberService;
         this.tokenService = tokenService;
+        this.oAuth2MemberSuccessHandler = oAuth2MemberSuccessHandler;
     }
+
+    @Value("${moyoung.default}")
+    private String url;
+
+    @Value("${moyoung.local}")
+    private String localUrl;
+
+    @Value("${moyoung.moyoung}")
+    private String moyoungUrl;
+
+    @Value("${moyoung.apic}")
+    private String apicUrl;
+
+
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -74,19 +91,14 @@ public class SecurityConfiguration implements WebMvcConfigurer {
                         .anyRequest().permitAll()
                 )
                 .oauth2Login()
-                .successHandler(new OAuth2MemberSuccessHandler(memberService, tokenService));
+                .successHandler(oAuth2MemberSuccessHandler);
         return http.build();
     }
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowedOrigins(
-                Arrays.asList(
-                        "http://moyoung-toy-project.s3-website.ap-northeast-2.amazonaws.com",
-                        "http://www.moyoung.site",
-                        "http://localhost:5173",
-                        "https://apic.app"));
+        corsConfiguration.setAllowedOrigins(Arrays.asList(url, apicUrl, localUrl, moyoungUrl));
         corsConfiguration.setAllowedMethods(Arrays.asList("*"));
         corsConfiguration.setAllowedHeaders(Arrays.asList("*"));
         corsConfiguration.setExposedHeaders(Arrays.asList("*"));
