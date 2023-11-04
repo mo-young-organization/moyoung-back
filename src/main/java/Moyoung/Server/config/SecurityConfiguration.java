@@ -35,11 +35,9 @@ public class SecurityConfiguration implements WebMvcConfigurer {
 
     private final MemberService memberService;
     private final TokenService tokenService;
-    private final OAuth2MemberSuccessHandler oAuth2MemberSuccessHandler;
-    public SecurityConfiguration(@Lazy MemberService memberService, @Lazy TokenService tokenService, @Lazy OAuth2MemberSuccessHandler oAuth2MemberSuccessHandler) {
+    public SecurityConfiguration(@Lazy MemberService memberService, @Lazy TokenService tokenService) {
         this.memberService = memberService;
         this.tokenService = tokenService;
-        this.oAuth2MemberSuccessHandler = oAuth2MemberSuccessHandler;
     }
 
     @Value("${moyoung.default}")
@@ -53,6 +51,9 @@ public class SecurityConfiguration implements WebMvcConfigurer {
 
     @Value("${moyoung.apic}")
     private String apicUrl;
+
+    @Value("${moyoung.callback}")
+    private String callbackUrl;
 
 
 
@@ -91,7 +92,7 @@ public class SecurityConfiguration implements WebMvcConfigurer {
                         .anyRequest().permitAll()
                 )
                 .oauth2Login()
-                .successHandler(oAuth2MemberSuccessHandler);
+                .successHandler(new OAuth2MemberSuccessHandler(memberService, tokenService, callbackUrl));
         return http.build();
     }
 
