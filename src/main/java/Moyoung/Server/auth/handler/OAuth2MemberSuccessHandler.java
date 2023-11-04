@@ -36,6 +36,7 @@ public class OAuth2MemberSuccessHandler extends SimpleUrlAuthenticationSuccessHa
 
     private final MemberService memberService;
     private final TokenService tokenService;
+    private final String url;
 
     @Value("${moyoung.callback}")
     private String url;

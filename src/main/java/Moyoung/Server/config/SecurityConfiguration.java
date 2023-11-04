@@ -54,6 +54,8 @@ public class SecurityConfiguration implements WebMvcConfigurer {
     @Value("${moyoung.apic}")
     private String apicUrl;
 
+    @Value("${moyoung.callback}")
+    private String callbackUrl;
 
 
     @Bean
@@ -91,7 +93,8 @@ public class SecurityConfiguration implements WebMvcConfigurer {
                         .anyRequest().permitAll()
                 )
                 .oauth2Login()
-                .successHandler(oAuth2MemberSuccessHandler);
+                .successHandler(new OAuth2MemberSuccessHandler(memberService, tokenService, callbackUrl));
+
         return http.build();
     }
 
