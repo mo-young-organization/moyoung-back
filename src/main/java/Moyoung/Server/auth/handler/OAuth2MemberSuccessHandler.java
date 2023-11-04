@@ -33,6 +33,7 @@ public class OAuth2MemberSuccessHandler extends SimpleUrlAuthenticationSuccessHa
 
     private final MemberService memberService;
     private final TokenService tokenService;
+    private final String url;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -96,7 +97,7 @@ public class OAuth2MemberSuccessHandler extends SimpleUrlAuthenticationSuccessHa
 
     // 콜백 Uri
     private URI createUri(boolean userInfoCheck, String accessToken, String refreshToken, long memberId, String displayName, String accessTokenExpiration, String refreshTokenExpiration) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("http://localhost:5173/callback")
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url)
                 .queryParam("user", userInfoCheck)
                 .queryParam("Authorization", accessToken)
                 .queryParam("Refresh", refreshToken)
@@ -109,7 +110,7 @@ public class OAuth2MemberSuccessHandler extends SimpleUrlAuthenticationSuccessHa
 
     // 콜백 Uri
     private URI createInterestUri(boolean userInfoCheck, String accessToken, String refreshToken, long memberId, String accessTokenExpiration, String refreshTokenExpiration) {
-        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString("http://localhost:5173/callback")
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url)
                 .queryParam("user", userInfoCheck)
                 .queryParam("Authorization", accessToken)
                 .queryParam("Refresh", refreshToken)
