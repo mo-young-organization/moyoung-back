@@ -1,5 +1,6 @@
 package Moyoung.Server.recruitingarticle.mapper;
 
+import Moyoung.Server.chat.entity.ChatRoomInfo;
 import Moyoung.Server.member.entity.Member;
 import Moyoung.Server.recruitingarticle.dto.RecruitingArticleDto;
 import Moyoung.Server.recruitingarticle.entity.RecruitingArticle;
@@ -108,5 +109,45 @@ public interface RecruitingArticleMapper {
                 .currentNum(recruitingArticle.getCurrentNum())
                 .gender(recruitingArticle.getGender().getExplain())
                 .age(recruitingArticle.getAge().getAge()).build();
+    }
+
+    default RecruitingArticleDto.Response recruitingArticleToResponse(RecruitingArticle recruitingArticle) {
+        Member writer = recruitingArticle.getMember();
+        RunningTime runningTime = recruitingArticle.getRunningTime();
+        return RecruitingArticleDto.Response.builder()
+                .recruitingArticleId(recruitingArticle.getRecruitingArticleId())
+                .writerMemberId(writer.getMemberId())
+                .writerDisplayName(writer.getDisplayName())
+                .writerAge(writer.getAge().getAge())
+                .writerGender(writer.getGender() ? "남성" : "여성")
+                .title(recruitingArticle.getTitle())
+                .cinemaRegion(recruitingArticle.getCinemaRegion())
+                .cinemaName(recruitingArticle.getCinemaName())
+                .cinemaBrand(recruitingArticle.getCinemaBrand())
+                .movieThumbnailUrl(recruitingArticle.getMovieThumbnailUrl())
+                .movieName(recruitingArticle.getMovieName())
+                .movieRating(recruitingArticle.getMovieRating())
+                .startTime(runningTime.getStartTime())
+                .screenInfo(runningTime.getScreenInfo())
+                .maxNum(recruitingArticle.getMaxNum())
+                .currentNum(recruitingArticle.getCurrentNum())
+                .gender(recruitingArticle.getGender().getExplain())
+                .age(recruitingArticle.getAge().getAge())
+                .userInfos(chatRoomInfoListToUserInfoList(recruitingArticle.getChatRoomInfos())).build();
+    }
+
+    default List<RecruitingArticleDto.UserInfo> chatRoomInfoListToUserInfoList(List<ChatRoomInfo> chatRoomInfoList) {
+        return chatRoomInfoList.stream()
+                .map(chatRoomInfo -> chatRoomInfoToUserInfo(chatRoomInfo))
+                .collect(Collectors.toList());
+    }
+
+    default RecruitingArticleDto.UserInfo chatRoomInfoToUserInfo(ChatRoomInfo chatRoomInfo) {
+        Member member = chatRoomInfo.getMember();
+        return RecruitingArticleDto.UserInfo.builder()
+                .memberId(member.getMemberId())
+                .displayName(member.getDisplayName())
+                .age(member.getAge().getAge())
+                .gender(member.getGender() ? "남성" : "여성").build();
     }
 }

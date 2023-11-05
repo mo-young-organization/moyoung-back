@@ -67,6 +67,13 @@ public class RecruitingArticleController {
         return new ResponseEntity<>(new MultiResponseDto<>(recruitingArticleMapper.recruitingArticlesToList(recruitingArticles), pageRecruitingArticle), HttpStatus.OK);
     }
 
+    @GetMapping("/recruit/{recruit-id}")
+    public ResponseEntity getRecruitingArticle(@PathVariable("recruit-id") long recruitingArticleId) {
+        long authenticationMemberId = JwtParseInterceptor.getAuthenticatedMemberId();
+        RecruitingArticle recruitingArticle = recruitingArticleService.getRecruitingArticle(recruitingArticleId, authenticationMemberId);
+        return new ResponseEntity<>(recruitingArticleMapper.recruitingArticleToResponse(recruitingArticle), HttpStatus.OK);
+    }
+
     @DeleteMapping("/recruit/{recruit-id}")
     public ResponseEntity deleteRecruitingArticle(@PathVariable("recruit-id") long recruitingArticleId) {
         long authenticationMemberId = JwtParseInterceptor.getAuthenticatedMemberId();
