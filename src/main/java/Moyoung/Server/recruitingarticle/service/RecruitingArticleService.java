@@ -102,6 +102,13 @@ public class RecruitingArticleService  {
         return recruitingArticleRepository.findAllByGenderNumAndAgeInAndTitleContainingUseDistance(genderNum, ageList, x, y, distance, keyword, PageRequest.of(page - 1, size));
     }
 
+    public RecruitingArticle getRecruitingArticle(Long recruitingArticleId, Long memberId) {
+        RecruitingArticle recruitingArticle = findVerifiedRecruitingArticle(recruitingArticleId);
+        checkEnter(memberId, recruitingArticle.getChatRoomInfos());
+
+        return recruitingArticle;
+    }
+
     // 게시글 삭제
     public void deleteRecruitingArticle(long recruitingArticleId, long memberId) {
         RecruitingArticle recruitingArticle = findVerifiedRecruitingArticle(recruitingArticleId);
@@ -172,5 +179,14 @@ public class RecruitingArticleService  {
         if (authorId != memberId) {
             throw new BusinessLogicException(ExceptionCode.ONLY_AUTHOR);
         }
+    }
+
+    // 참여 확인
+    private void checkEnter(Long memberId, List<ChatRoomInfo> chatRoomInfoList) {
+        boolean isMemberInChatRoom = chatRoomInfoList
+                .stream()
+                .anyMatch(chatRoomInfo -> chatRoomInfo.getMember().getMemberId() == memberId);
+
+        if (!isMemberInChatRoom) throw new BusinessLogicException(ExceptionCode.NOT_ENTER_HERE);
     }
 }
