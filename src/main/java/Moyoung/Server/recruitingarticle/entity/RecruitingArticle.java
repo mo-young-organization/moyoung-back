@@ -34,11 +34,16 @@ public class RecruitingArticle {
     @OneToMany(mappedBy = "recruitingArticle", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     private List<Chat> chats = new ArrayList<>();
 
+    @ElementCollection(targetClass = Age.class)
+    @CollectionTable(name = "recruiting_article_age", joinColumns = @JoinColumn(name = "recruiting_article_id"))
+    @Column(name = "age")
+    @Enumerated(EnumType.STRING)
+    private List<Age> ages = new ArrayList<>();
+
     private String title;
     // 참여 최대 인원
     private int maxNum;
     private int currentNum;
-    private Age age;
     private Gender gender;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
@@ -88,5 +93,9 @@ public class RecruitingArticle {
         Gender(String explain) {
             this.explain = explain;
         }
+    }
+
+    public void addAge(Age age) {
+        this.ages.add(age);
     }
 }
