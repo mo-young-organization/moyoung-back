@@ -73,7 +73,7 @@ public class RecruitingArticleService  {
         findedRecruitingArticle.setRunningTime(runningTime);
         findedRecruitingArticle.setMaxNum(recruitingArticle.getMaxNum());
         findedRecruitingArticle.setGender(recruitingArticle.getGender());
-        findedRecruitingArticle.setAge(recruitingArticle.getAge());
+        findedRecruitingArticle.setAges(recruitingArticle.getAges());
         findedRecruitingArticle.setModifiedAt(LocalDateTime.now());
         recruitingArticleRepository.save(findedRecruitingArticle);
     }
