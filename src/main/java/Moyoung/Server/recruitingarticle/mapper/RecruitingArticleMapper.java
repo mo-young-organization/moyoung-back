@@ -22,7 +22,6 @@ public interface RecruitingArticleMapper {
         recruitingArticle.setMaxNum(requestBody.getMaxNum());
         recruitingArticle.setCreatedAt(LocalDateTime.now());
         int gender = requestBody.getGender();
-        int age = requestBody.getAge();
         switch (gender) {
             case 1:
                 recruitingArticle.setGender(RecruitingArticle.Gender.ALL);
@@ -34,17 +33,22 @@ public interface RecruitingArticleMapper {
                 recruitingArticle.setGender(RecruitingArticle.Gender.WOMAN);
                 break;
         }
-        switch (age) {
-            case 1:
-                recruitingArticle.setAge(RecruitingArticle.Age.TEENAGER);
-                break;
-            case 2:
-                recruitingArticle.setAge(RecruitingArticle.Age.TWENTIES);
-                break;
-            case 3:
-                recruitingArticle.setAge(RecruitingArticle.Age.THIRTIES);
-                break;
-        }
+
+        requestBody.getAges()
+                .forEach(age -> {
+                    switch (age) {
+                        case 1:
+                            recruitingArticle.addAge(RecruitingArticle.Age.TEENAGER);
+                            break;
+                        case 2:
+                            recruitingArticle.addAge(RecruitingArticle.Age.TWENTIES);
+                            break;
+                        case 3:
+                            recruitingArticle.addAge(RecruitingArticle.Age.THIRTIES);
+                            break;
+                    }
+                });
+
         return recruitingArticle;
     }
 
@@ -56,7 +60,6 @@ public interface RecruitingArticleMapper {
         recruitingArticle.setTitle(requestBody.getTitle());
         recruitingArticle.setMaxNum(requestBody.getMaxNum());
         int gender = requestBody.getGender();
-        int age = requestBody.getAge();
         switch (gender) {
             case 1:
                 recruitingArticle.setGender(RecruitingArticle.Gender.ALL);
@@ -68,27 +71,32 @@ public interface RecruitingArticleMapper {
                 recruitingArticle.setGender(RecruitingArticle.Gender.WOMAN);
                 break;
         }
-        switch (age) {
-            case 1:
-                recruitingArticle.setAge(RecruitingArticle.Age.TEENAGER);
-                break;
-            case 2:
-                recruitingArticle.setAge(RecruitingArticle.Age.TWENTIES);
-                break;
-            case 3:
-                recruitingArticle.setAge(RecruitingArticle.Age.THIRTIES);
-                break;
-        }
+
+        requestBody.getAges()
+                .forEach(age -> {
+                    switch (age) {
+                        case 1:
+                            recruitingArticle.addAge(RecruitingArticle.Age.TEENAGER);
+                            break;
+                        case 2:
+                            recruitingArticle.addAge(RecruitingArticle.Age.TWENTIES);
+                            break;
+                        case 3:
+                            recruitingArticle.addAge(RecruitingArticle.Age.THIRTIES);
+                            break;
+                    }
+                });
+
         return recruitingArticle;
     }
 
     default List<RecruitingArticleDto.ResponseForList> recruitingArticlesToList(List<RecruitingArticle> recruitingArticles) {
         return recruitingArticles.stream()
-                .map(recruitingArticle -> recruitingArticleToReseponseForList(recruitingArticle))
+                .map(recruitingArticle -> recruitingArticleToResponseForList(recruitingArticle))
                 .collect(Collectors.toList());
     }
 
-    default RecruitingArticleDto.ResponseForList recruitingArticleToReseponseForList(RecruitingArticle recruitingArticle) {
+    default RecruitingArticleDto.ResponseForList recruitingArticleToResponseForList(RecruitingArticle recruitingArticle) {
         Member writer = recruitingArticle.getMember();
         RunningTime runningTime = recruitingArticle.getRunningTime();
         return RecruitingArticleDto.ResponseForList.builder()
@@ -108,7 +116,7 @@ public interface RecruitingArticleMapper {
                 .maxNum(recruitingArticle.getMaxNum())
                 .currentNum(recruitingArticle.getCurrentNum())
                 .gender(recruitingArticle.getGender().getExplain())
-                .age(recruitingArticle.getAge().getAge()).build();
+                .ages(recruitingArticle.getAges().stream().map(age -> age.getAge()).collect(Collectors.toList())).build();
     }
 
     default RecruitingArticleDto.Response recruitingArticleToResponse(RecruitingArticle recruitingArticle) {
@@ -132,7 +140,7 @@ public interface RecruitingArticleMapper {
                 .maxNum(recruitingArticle.getMaxNum())
                 .currentNum(recruitingArticle.getCurrentNum())
                 .gender(recruitingArticle.getGender().getExplain())
-                .age(recruitingArticle.getAge().getAge())
+                .ages(recruitingArticle.getAges().stream().map(age -> age.getAge()).collect(Collectors.toList()))
                 .userInfos(chatRoomInfoListToUserInfoList(recruitingArticle.getChatRoomInfos())).build();
     }
 

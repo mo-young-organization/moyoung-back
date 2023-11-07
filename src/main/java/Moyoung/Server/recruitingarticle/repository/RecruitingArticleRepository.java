@@ -16,7 +16,7 @@ public interface RecruitingArticleRepository extends JpaRepository<RecruitingArt
             "(:genderNum = 1 AND ra.gender = 1) OR " +
             "(:genderNum = 2 AND ra.gender = 2)) " +
             "AND " +
-            "(ra.age IN :ageList) " +
+            "EXISTS (SELECT 1 FROM ra.ages age WHERE age IN :ageList) " +
             "AND " +
             "ST_DISTANCE_SPHERE(POINT(ra.x, ra.y), POINT(:x, :y)) <= :distance " +
             "AND " +
@@ -38,7 +38,7 @@ public interface RecruitingArticleRepository extends JpaRepository<RecruitingArt
             "(:genderNum = 1 AND ra.gender = 1) OR " +
             "(:genderNum = 2 AND ra.gender = 2)) " +
             "AND " +
-            "(ra.age IN :ageList) " +
+            "EXISTS (SELECT 1 FROM ra.ages age WHERE age IN :ageList) " +
             "AND " +
             "ST_DISTANCE_SPHERE(POINT(ra.x, ra.y), POINT(:x, :y)) <= :distance " +
             "AND " +
