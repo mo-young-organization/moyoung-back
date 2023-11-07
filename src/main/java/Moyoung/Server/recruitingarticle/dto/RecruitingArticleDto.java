@@ -19,7 +19,7 @@ public class RecruitingArticleDto {
         @NotBlank
         private int gender;
         @NotBlank
-        private int age;
+        private List<Integer> ages;
     }
 
     @Getter
@@ -41,7 +41,7 @@ public class RecruitingArticleDto {
         private int maxNum;
         private int currentNum;
         private String gender;
-        private String age;
+        private List<String> ages;
     }
 
     @Getter
@@ -64,7 +64,7 @@ public class RecruitingArticleDto {
         private int maxNum;
         private int currentNum;
         private String gender;
-        private String age;
+        private List<String> ages;
         private List<UserInfo> userInfos;
     }
 
