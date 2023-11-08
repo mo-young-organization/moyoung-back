@@ -73,7 +73,7 @@ public class MemberControllerTest implements MemberControllerHelper {
         // given
         given(mapper.postInfoToMember(Mockito.any(MemberDto.PostInfo.class))).willReturn(new Member());
 
-        given(memberService.registerInformation(Mockito.anyLong(), Mockito.any(Member.class))).willReturn("test");
+        given(memberService.registerInformation(Mockito.anyLong(), Mockito.any(Member.class))).willReturn(new Member());
 
         // when
         ResultActions actions =

@@ -1,6 +1,7 @@
 package Moyoung.Server.member.dto;
 
 import Moyoung.Server.validator.NotSpace;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -46,6 +47,13 @@ public class MemberDto {
         private String displayName;
         private Boolean gender;
         private Integer age;
+    }
+
+    @Getter
+    @Builder
+    public static class InfoResponse {
+        private String displayName;
+        private String age;
     }
 
 
