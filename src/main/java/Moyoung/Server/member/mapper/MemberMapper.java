@@ -50,4 +50,10 @@ public interface MemberMapper {
 
         return member;
     }
+
+    default MemberDto.InfoResponse memberToInfoResponse(Member member) {
+        return MemberDto.InfoResponse.builder()
+                .displayName(member.getDisplayName())
+                .age(member.getAge().getAge()).build();
+    }
 }

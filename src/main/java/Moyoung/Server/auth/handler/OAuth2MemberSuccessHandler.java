@@ -90,7 +90,7 @@ public class OAuth2MemberSuccessHandler extends SimpleUrlAuthenticationSuccessHa
         if (member.getDisplayName() == null) {
             uri = createInterestUri(false, accessToken, refreshToken, member.getMemberId(), accessTokenExpirationFormatted, refreshTokenExpirationFormatted).toString();
         } else {
-            uri = createUri(true, accessToken, refreshToken, member.getMemberId(), member.getDisplayName(), accessTokenExpirationFormatted, refreshTokenExpirationFormatted).toString();
+            uri = createUri(true, accessToken, refreshToken, member.getMemberId(), member.getDisplayName(), member.getAge().getAge(), accessTokenExpirationFormatted, refreshTokenExpirationFormatted).toString();
         }
 
 
@@ -98,13 +98,14 @@ public class OAuth2MemberSuccessHandler extends SimpleUrlAuthenticationSuccessHa
     }
 
     // 콜백 Uri
-    private URI createUri(boolean userInfoCheck, String accessToken, String refreshToken, long memberId, String displayName, String accessTokenExpiration, String refreshTokenExpiration) {
+    private URI createUri(boolean userInfoCheck, String accessToken, String refreshToken, long memberId, String displayName,String age, String accessTokenExpiration, String refreshTokenExpiration) {
         UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url)
                 .queryParam("user", userInfoCheck)
                 .queryParam("Authorization", accessToken)
                 .queryParam("Refresh", refreshToken)
                 .queryParam("memberId", memberId)
                 .queryParam("displayName", URLEncoder.encode(displayName, UTF_8))
+                .queryParam("age", age)
                 .queryParam("accessTokenExpiration", accessTokenExpiration)
                 .queryParam("refreshTokenExpiration", refreshTokenExpiration);
         return builder.build().toUri();

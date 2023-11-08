@@ -2,6 +2,7 @@ package Moyoung.Server.member.controller;
 
 import Moyoung.Server.auth.interceptor.JwtParseInterceptor;
 import Moyoung.Server.member.dto.MemberDto;
+import Moyoung.Server.member.entity.Member;
 import Moyoung.Server.member.mapper.MemberMapper;
 import Moyoung.Server.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -25,8 +26,8 @@ public class MemberController {
     @PostMapping("/info")
     public ResponseEntity postInformation(@Validated @RequestBody MemberDto.PostInfo requestBody) {
         long authenticationMemberId = JwtParseInterceptor.getAuthenticatedMemberId();
-        String displayName = memberService.registerInformation(authenticationMemberId, memberMapper.postInfoToMember(requestBody));
-        return new ResponseEntity<>(displayName, HttpStatus.OK);
+        Member member = memberService.registerInformation(authenticationMemberId, memberMapper.postInfoToMember(requestBody));
+        return new ResponseEntity<>(memberMapper.memberToInfoResponse(member), HttpStatus.OK);
     }
 
     @PatchMapping("/info")
