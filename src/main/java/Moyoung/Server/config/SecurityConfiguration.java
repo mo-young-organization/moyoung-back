@@ -29,6 +29,8 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.Arrays;
+import java.util.List;
+
 @Configuration
 @EnableWebSecurity(debug = true)
 public class SecurityConfiguration implements WebMvcConfigurer {
@@ -42,17 +44,8 @@ public class SecurityConfiguration implements WebMvcConfigurer {
         this.oAuth2MemberSuccessHandler = oAuth2MemberSuccessHandler;
     }
 
-    @Value("${moyoung.default}")
-    private String url;
-
-    @Value("${moyoung.local}")
-    private String localUrl;
-
-    @Value("${moyoung.moyoung}")
-    private String moyoungUrl;
-
-    @Value("${moyoung.apic}")
-    private String apicUrl;
+    @Value("${moyoung.cors}")
+    private List<String> allowedOrigins;
 
     @Value("${moyoung.callback}")
     private String callbackUrl;
@@ -101,7 +94,7 @@ public class SecurityConfiguration implements WebMvcConfigurer {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.setAllowedOrigins(Arrays.asList(url, apicUrl, localUrl, moyoungUrl));
+        corsConfiguration.setAllowedOrigins(allowedOrigins);
         corsConfiguration.setAllowedMethods(Arrays.asList("*"));
         corsConfiguration.setAllowedHeaders(Arrays.asList("*"));
         corsConfiguration.setExposedHeaders(Arrays.asList("*"));

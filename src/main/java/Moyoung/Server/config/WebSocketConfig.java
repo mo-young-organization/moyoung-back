@@ -14,17 +14,8 @@ import org.springframework.web.socket.config.annotation.*;
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     private final StompHandler stompHandler;
 
-    @Value("${moyoung.default}")
-    private String url;
-
-    @Value("${moyoung.local}")
-    private String localUrl;
-
-    @Value("${moyoung.moyoung}")
-    private String moyoungUrl;
-
-    @Value("${moyoung.apic}")
-    private String apicUrl;
+    @Value("${moyoung.cors}")
+    private String[] allowedOrigins;
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
@@ -36,7 +27,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/ws").setAllowedOrigins(url, apicUrl, localUrl, moyoungUrl);//.withSockJS();
+        registry.addEndpoint("/ws").setAllowedOrigins(allowedOrigins);//.withSockJS();
 //        registry.addEndpoint("/ws").setAllowedOrigins("*")
 //                .withSockJS();
     }
