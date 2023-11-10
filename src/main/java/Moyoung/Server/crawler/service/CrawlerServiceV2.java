@@ -23,6 +23,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
@@ -202,97 +203,16 @@ public class CrawlerServiceV2 {
                     runningTime.setScreenInfo(scrnNm);
 
 
-                    Movie movie;
+                    Movie movie = new Movie();
                     Optional<Movie> optionalMovie = movieRepository.findByName(movieNm);
                     if (optionalMovie.isPresent()) {
                         movie = optionalMovie.get();
+
+                        // 영화 객체에 빠진 부분이 없으면 다시 크롤링
+                        // 다시 크롤링 해도 없는 경우가 있으므로 금일 크롤링을 진행 했다면 더이상 안하게 함
+                        movie = recrawlMovieInfo(playDate, httpClient, gson, movieNm, movieCd, movie);
                     } else {
-                        String movieInfoUrl = UriComponentsBuilder.fromUriString("http://www.kobis.or.kr/kobisopenapi/webservice/rest/movie/searchMovieInfo.json")
-                                .queryParam("key", KEY)
-                                .queryParam("movieCd", movieCd).build().toString();
-
-                        HttpGet httpGet = new HttpGet(movieInfoUrl);
-
-                        // 요청 보내기
-                        CloseableHttpResponse movieResponse = httpClient.execute(httpGet);
-
-                        // 응답 받기
-                        org.apache.http.HttpEntity movieResponseEntity = movieResponse.getEntity();
-                        String movieResponseString = EntityUtils.toString(movieResponseEntity);
-
-                        // Gson을 사용하여 JSON 파싱
-                        MovieInfoResultResponse movieInfoResultResponse = gson.fromJson(movieResponseString, MovieInfoResultResponse.class);
-
-                        MovieInfoResultResponse.MovieInfo movieInfo = movieInfoResultResponse.getMovieInfoResult().getMovieInfo();
-
-                        String movieShowTm = movieInfo.getShowTm();
-                        String openDt = movieInfo.getOpenDt();
-                        String movieNmEn = movieInfo.getMovieNmEn();
-                        List<MovieInfoResultResponse.Nation> nations = movieInfo.getNations();
-                        List<MovieInfoResultResponse.Genre> genres = movieInfo.getGenres();
-                        List<MovieInfoResultResponse.Audit> audits = movieInfo.getAudits();
-
-                        movie = new Movie();
-                        movie.setName(movieNm);
-                        movie.setEnName(movieNmEn);
-                        // 개봉일 추가
-                        movie.setShowTm(movieShowTm);
-                        movie.setReleaseDate(openDt);
-                        movie.setMovieCode(movieCd);
-
-                        // 국가 추가
-                        for (MovieInfoResultResponse.Nation nation : nations) {
-                            movie.addCountry(nation.getNationNm());
-                        }
-                        // 장르 추가
-                        for (MovieInfoResultResponse.Genre genre : genres) {
-                            movie.addGenre(genre.getGenreNm());
-                        }
-                        // 관람 제한 연령 추가
-                        for (MovieInfoResultResponse.Audit audit : audits) {
-                            movie.setMovieRating(audit.getWatchGradeNm());
-                        }
-
-                        url = "https://www.kobis.or.kr/kobis/business/mast/mvie/searchMovieDtl.do";
-                        httpPost = new HttpPost(url);
-
-                        // form-data 생성
-                        List<BasicNameValuePair> formParams = new ArrayList<>();
-                        formParams.add(new BasicNameValuePair("code", movieCd));
-                        formParams.add(new BasicNameValuePair("titleYN", "Y"));
-
-                        // UrlEncodedFormEntity로 form-data 설정
-                        UrlEncodedFormEntity formEntity = new UrlEncodedFormEntity(formParams, "UTF-8");
-                        httpPost.setEntity(formEntity);
-
-                        // 요청 보내기
-                        response = httpClient.execute(httpPost);
-
-                        // 응답을 파싱하고 Document로 변환
-                        String responseBody = EntityUtils.toString(response.getEntity(), "UTF-8");
-                        Document doc = Jsoup.parse(responseBody);
-
-                        Element aElement = doc.select("a.fl.thumb").first();
-
-                        String hrefValue = null;
-                        if (aElement != null) {
-                            // "href" 속성의 값을 가져옴
-                            hrefValue = aElement.attr("href");
-                            log.info("href 값: " + hrefValue);
-                        } else {
-                            log.error("class 'fl thumb'를 가진 <a> 요소를 찾을 수 없습니다.");
-                        }
-
-                        movie.setThumbnailUrl(IMAGE_URL + hrefValue);
-
-                        Element pElement = doc.select("p.desc_info").first();
-                        String pElementText = null;
-
-                        if (pElement != null) {
-                            pElementText = pElement.text();
-                        }
-
-                        movie.setInfo(pElementText);
+                        movie = crawlMovieInfo(httpClient, gson, movieNm, movieCd, movie);
 
                     }
                     movie.setLastAddedAt(playDate);
@@ -310,6 +230,120 @@ public class CrawlerServiceV2 {
                 }
             }
         }
+    }
+
+    private Movie recrawlMovieInfo(LocalDate playDate, CloseableHttpClient httpClient, Gson gson, String movieNm, String movieCd, Movie movie) throws IOException {
+        if (movieHasNullOrEmpty(movie)) {
+            if (!movie.getLastAddedAt().equals(playDate)) {
+                log.info("MovieReload: {}", movie.getName());
+                movie.setGenre(null);
+                movie.setCountry(null);
+                movie = crawlMovieInfo(httpClient, gson, movieNm, movieCd, movie);
+            }
+        }
+        return movie;
+    }
+
+    private static boolean movieHasNullOrEmpty(Movie movie) {
+        return movie.getShowTm() == null || movie.getName() == null || movie.getEnName() == null || movie.getThumbnailUrl() == null
+                || movie.getMovieRating() == null || movie.getInfo() == null || movie.getReleaseDate() == null
+                || movie.getGenre() == null || movie.getCountry() == null || movie.getShowTm().isEmpty()
+                || movie.getName().isEmpty() || movie.getEnName().isEmpty() || movie.getThumbnailUrl().isEmpty()
+                || movie.getMovieRating().isEmpty() || movie.getInfo().isEmpty() || movie.getReleaseDate().isEmpty()
+                || movie.getGenre().isEmpty() || movie.getCountry().isEmpty();
+    }
+
+    @NotNull
+    private Movie crawlMovieInfo(CloseableHttpClient httpClient, Gson gson, String movieNm, String movieCd, Movie movie) throws IOException {
+        HttpPost httpPost;
+        CloseableHttpResponse response;
+        String url;
+        String movieInfoUrl = UriComponentsBuilder.fromUriString("http://www.kobis.or.kr/kobisopenapi/webservice/rest/movie/searchMovieInfo.json")
+                .queryParam("key", KEY)
+                .queryParam("movieCd", movieCd).build().toString();
+
+        HttpGet httpGet = new HttpGet(movieInfoUrl);
+
+        // 요청 보내기
+        CloseableHttpResponse movieResponse = httpClient.execute(httpGet);
+
+        // 응답 받기
+        org.apache.http.HttpEntity movieResponseEntity = movieResponse.getEntity();
+        String movieResponseString = EntityUtils.toString(movieResponseEntity);
+
+        // Gson을 사용하여 JSON 파싱
+        MovieInfoResultResponse movieInfoResultResponse = gson.fromJson(movieResponseString, MovieInfoResultResponse.class);
+
+        MovieInfoResultResponse.MovieInfo movieInfo = movieInfoResultResponse.getMovieInfoResult().getMovieInfo();
+
+        String movieShowTm = movieInfo.getShowTm();
+        String openDt = movieInfo.getOpenDt();
+        String movieNmEn = movieInfo.getMovieNmEn();
+        List<MovieInfoResultResponse.Nation> nations = movieInfo.getNations();
+        List<MovieInfoResultResponse.Genre> genres = movieInfo.getGenres();
+        List<MovieInfoResultResponse.Audit> audits = movieInfo.getAudits();
+
+        movie.setName(movieNm);
+        movie.setEnName(movieNmEn);
+        // 개봉일 추가
+        movie.setShowTm(movieShowTm);
+        movie.setReleaseDate(openDt);
+        movie.setMovieCode(movieCd);
+
+        // 국가 추가
+        for (MovieInfoResultResponse.Nation nation : nations) {
+            movie.addCountry(nation.getNationNm());
+        }
+        // 장르 추가
+        for (MovieInfoResultResponse.Genre genre : genres) {
+            movie.addGenre(genre.getGenreNm());
+        }
+        // 관람 제한 연령 추가
+        for (MovieInfoResultResponse.Audit audit : audits) {
+            movie.setMovieRating(audit.getWatchGradeNm());
+        }
+
+        url = "https://www.kobis.or.kr/kobis/business/mast/mvie/searchMovieDtl.do";
+        httpPost = new HttpPost(url);
+
+        // form-data 생성
+        List<BasicNameValuePair> formParams = new ArrayList<>();
+        formParams.add(new BasicNameValuePair("code", movieCd));
+        formParams.add(new BasicNameValuePair("titleYN", "Y"));
+
+        // UrlEncodedFormEntity로 form-data 설정
+        UrlEncodedFormEntity formEntity = new UrlEncodedFormEntity(formParams, "UTF-8");
+        httpPost.setEntity(formEntity);
+
+        // 요청 보내기
+        response = httpClient.execute(httpPost);
+
+        // 응답을 파싱하고 Document로 변환
+        String responseBody = EntityUtils.toString(response.getEntity(), "UTF-8");
+        Document doc = Jsoup.parse(responseBody);
+
+        Element aElement = doc.select("a.fl.thumb").first();
+
+        String hrefValue = null;
+        if (aElement != null) {
+            // "href" 속성의 값을 가져옴
+            hrefValue = aElement.attr("href");
+            log.info("href 값: " + hrefValue);
+        } else {
+            log.error("class 'fl thumb'를 가진 <a> 요소를 찾을 수 없습니다.");
+        }
+
+        movie.setThumbnailUrl(IMAGE_URL + hrefValue);
+
+        Element pElement = doc.select("p.desc_info").first();
+        String pElementText = null;
+
+        if (pElement != null) {
+            pElementText = pElement.text();
+        }
+
+        movie.setInfo(pElementText);
+        return movie;
     }
 
     // kakao Api를 통한 x, y(위도, 경도) 설정 메서드
