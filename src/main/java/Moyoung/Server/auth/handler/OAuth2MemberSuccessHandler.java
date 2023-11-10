@@ -103,7 +103,7 @@ public class OAuth2MemberSuccessHandler extends SimpleUrlAuthenticationSuccessHa
                 .queryParam("Refresh", refreshToken)
                 .queryParam("memberId", memberId)
                 .queryParam("displayName", URLEncoder.encode(displayName, UTF_8))
-                .queryParam("age", age)
+                .queryParam("age", URLEncoder.encode(age, UTF_8))
                 .queryParam("accessTokenExpiration", accessTokenExpiration)
                 .queryParam("refreshTokenExpiration", refreshTokenExpiration);
         return builder.build().toUri();
