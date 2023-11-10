@@ -18,8 +18,12 @@ public interface CinemaMapper {
                 .movieInfo(MovieDto.NearResponse.builder()
                         .movieId(movie.getMovieId())
                         .name(movie.getName())
+                        .enName(movie.getEnName())
                         .thumbnailUrl(movie.getThumbnailUrl())
+                        .genre(movie.getGenre())
+                        .showTm(movie.getShowTm())
                         .movieRating(movie.getMovieRating())
+                        .releaseDate(movie.getReleaseDate())
                         .info(movie.getInfo()).build())
                 .cinemaInfo(cinemaPlusListToCinemaDtoResonseList(cinemaPlusList)).build();
     }
