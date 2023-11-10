@@ -87,8 +87,7 @@ public interface MovieMapper {
     default MovieDto.Rank movieRankToRank(MovieRank movieRank) {
         Movie movie = movieRank.getMovie();
         String movieName = movie.getName();
-        movieName = movieName.replaceAll("\\[.*?\\]", "");
-        movieName = movieName.trim();
+        movieName = movieName.replaceAll("\\(.*?\\)", "").trim();
 
         return MovieDto.Rank.builder()
                 .rank(movieRank.getMovieRank())

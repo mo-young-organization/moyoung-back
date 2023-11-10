@@ -66,7 +66,8 @@ public class CrawlerServiceV2 {
     @Value("${crawler.kakao.key}")
     private String KAKAOKEY;
 
-    private String IMAGE_URL = "https://www.kobis.or.kr";
+    @Value("crawler.image")
+    private static String IMAGE_URL;
 
     // 영화 순위 크롤링 메서드 (1위 부터 5위까지)
     // 0시 0분 5초에 받아오려 했으나 데이터 갱신되려면 시간이 조금 필요한 듯 하다
@@ -210,7 +211,7 @@ public class CrawlerServiceV2 {
 
                         // 영화 객체에 빠진 부분이 없으면 다시 크롤링
                         // 다시 크롤링 해도 없는 경우가 있으므로 금일 크롤링을 진행 했다면 더이상 안하게 함
-                        movie = recrawlMovieInfo(playDate, httpClient, gson, movieNm, movieCd, movie);
+                        movie = reCrawlMovieInfo(playDate, httpClient, gson, movieNm, movieCd, movie);
                     } else {
                         movie = crawlMovieInfo(httpClient, gson, movieNm, movieCd, movie);
 
@@ -232,7 +233,7 @@ public class CrawlerServiceV2 {
         }
     }
 
-    private Movie recrawlMovieInfo(LocalDate playDate, CloseableHttpClient httpClient, Gson gson, String movieNm, String movieCd, Movie movie) throws IOException {
+    private Movie reCrawlMovieInfo(LocalDate playDate, CloseableHttpClient httpClient, Gson gson, String movieNm, String movieCd, Movie movie) throws IOException {
         if (movieHasNullOrEmpty(movie)) {
             if (!movie.getLastAddedAt().equals(playDate)) {
                 log.info("MovieReload: {}", movie.getName());
@@ -250,7 +251,8 @@ public class CrawlerServiceV2 {
                 || movie.getGenre() == null || movie.getCountry() == null || movie.getShowTm().isEmpty()
                 || movie.getName().isEmpty() || movie.getEnName().isEmpty() || movie.getThumbnailUrl().isEmpty()
                 || movie.getMovieRating().isEmpty() || movie.getInfo().isEmpty() || movie.getReleaseDate().isEmpty()
-                || movie.getGenre().isEmpty() || movie.getCountry().isEmpty();
+                || movie.getGenre().isEmpty() || movie.getCountry().isEmpty()
+                || movie.getThumbnailUrl().equals(IMAGE_URL + "#");
     }
 
     @NotNull

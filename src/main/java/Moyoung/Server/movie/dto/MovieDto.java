@@ -32,8 +32,12 @@ public class MovieDto {
     public static class NearResponse {
         private long movieId;
         private String name;
+        private String enName;
         private String thumbnailUrl;
+        private String genre;
+        private String showTm;
         private String movieRating;
+        private String releaseDate;
         private String info;
     }
 
