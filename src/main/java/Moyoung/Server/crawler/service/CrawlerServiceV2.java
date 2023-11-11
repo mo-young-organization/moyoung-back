@@ -88,7 +88,7 @@ public class CrawlerServiceV2 {
             String url = UriComponentsBuilder.fromUriString("http://www.kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.json")
                     .queryParam("key", KEY)
                     .queryParam("targetDt", dateStr)
-                    .queryParam("itemPerPage", 5).build().toString();
+                    .queryParam("itemPerPage", 10).build().toString();
 
             // Get 요청 생성
             HttpGet httpGet = new HttpGet(url);
