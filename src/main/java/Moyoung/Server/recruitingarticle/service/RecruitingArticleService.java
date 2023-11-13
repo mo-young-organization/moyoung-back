@@ -127,6 +127,8 @@ public class RecruitingArticleService  {
         RecruitingArticle recruitingArticle = findVerifiedRecruitingArticle(recruitingArticleId);
         Member member = memberService.findVerifiedMember(memberId);
 
+        checkAgeWithArticleAge(member, recruitingArticle);
+
         if (recruitingArticle.getMaxNum() - recruitingArticle.getCurrentNum() < 1) {
             throw new BusinessLogicException(ExceptionCode.CAN_NOT_ENTER);
         }
@@ -194,7 +196,7 @@ public class RecruitingArticleService  {
         if (!isMemberInChatRoom) throw new BusinessLogicException(ExceptionCode.NOT_ENTER_HERE);
     }
 
-    // 참여자 나이 확인
+    // 게시글 작성자 나이 확인
     private void checkAge(Member member, List<RecruitingArticle.Age> ages) {
         Member.Age userAge = member.getAge();
 
@@ -206,6 +208,28 @@ public class RecruitingArticleService  {
             if (ages.contains(RecruitingArticle.Age.TEENAGER)) {
                 throw new BusinessLogicException(ExceptionCode.ADULT_CANT_SELECT_TEENAGER);
             }
+        }
+    }
+
+    // 참여자와 게시글의 나이 확인
+    private void checkAgeWithArticleAge(Member member, RecruitingArticle recruitingArticle) {
+        RecruitingArticle.Age userAge = null;
+        switch (member.getAge()) {
+            case TEENAGER:
+                userAge = RecruitingArticle.Age.TEENAGER;
+                break;
+            case TWENTIES:
+                userAge = RecruitingArticle.Age.TWENTIES;
+                break;
+            case THIRTIES:
+                userAge = RecruitingArticle.Age.THIRTIES;
+                break;
+            case NON:
+                throw new BusinessLogicException(ExceptionCode.SHOULD_REGIST_USER_INFO);
+        }
+
+        if (!recruitingArticle.getAges().contains(userAge)) {
+            throw new BusinessLogicException(ExceptionCode.DO_NOT_CONFORM_TO_THE_ARTICLE);
         }
     }
 }
