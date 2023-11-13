@@ -41,6 +41,8 @@ public class RecruitingArticleService  {
     // 게시글 등록
     public void registerRecruitingArticle(RecruitingArticle recruitingArticle, long memberId) {
         Member member = memberService.findVerifiedMember(memberId);
+        checkAge(member, recruitingArticle.getAges());
+
         RunningTime runningTime = runningTimeService.findVerifiedRunningTime(recruitingArticle.getRunningTime().getRunningTimeId());
         ChatRoomInfo chatRoomInfo = ChatRoomInfo.builder().member(member).recruitingArticle(recruitingArticle).entryTime(LocalDateTime.now()).lastMessageAt(LocalDateTime.now()).build();
         Movie movie = runningTime.getMovie();
@@ -67,6 +69,8 @@ public class RecruitingArticleService  {
         RecruitingArticle findedRecruitingArticle = findVerifiedRecruitingArticle(recruitingArticle.getRecruitingArticleId());
 
         checkAuthor(memberId, findedRecruitingArticle.getMember().getMemberId());
+        Member member = memberService.findVerifiedMember(memberId);
+        checkAge(member, recruitingArticle.getAges());
 
         RunningTime runningTime = runningTimeService.findVerifiedRunningTime(recruitingArticle.getRunningTime().getRunningTimeId());
         findedRecruitingArticle.setTitle(recruitingArticle.getTitle());
@@ -122,6 +126,8 @@ public class RecruitingArticleService  {
     public void enterRecruit(long recruitingArticleId, long memberId) {
         RecruitingArticle recruitingArticle = findVerifiedRecruitingArticle(recruitingArticleId);
         Member member = memberService.findVerifiedMember(memberId);
+
+        checkAgeWithArticleAge(member, recruitingArticle);
 
         if (recruitingArticle.getMaxNum() - recruitingArticle.getCurrentNum() < 1) {
             throw new BusinessLogicException(ExceptionCode.CAN_NOT_ENTER);
@@ -188,5 +194,42 @@ public class RecruitingArticleService  {
                 .anyMatch(chatRoomInfo -> chatRoomInfo.getMember().getMemberId() == memberId);
 
         if (!isMemberInChatRoom) throw new BusinessLogicException(ExceptionCode.NOT_ENTER_HERE);
+    }
+
+    // 게시글 작성자 나이 확인
+    private void checkAge(Member member, List<RecruitingArticle.Age> ages) {
+        Member.Age userAge = member.getAge();
+
+        if (userAge == Member.Age.TEENAGER) {
+            if (ages.contains(RecruitingArticle.Age.TWENTIES) || ages.contains(RecruitingArticle.Age.THIRTIES)) {
+                throw new BusinessLogicException(ExceptionCode.TEENAGER_SHOULD_SELECT_TEENAGER);
+            }
+        } else {
+            if (ages.contains(RecruitingArticle.Age.TEENAGER)) {
+                throw new BusinessLogicException(ExceptionCode.ADULT_CANT_SELECT_TEENAGER);
+            }
+        }
+    }
+
+    // 참여자와 게시글의 나이 확인
+    private void checkAgeWithArticleAge(Member member, RecruitingArticle recruitingArticle) {
+        RecruitingArticle.Age userAge = null;
+        switch (member.getAge()) {
+            case TEENAGER:
+                userAge = RecruitingArticle.Age.TEENAGER;
+                break;
+            case TWENTIES:
+                userAge = RecruitingArticle.Age.TWENTIES;
+                break;
+            case THIRTIES:
+                userAge = RecruitingArticle.Age.THIRTIES;
+                break;
+            case NON:
+                throw new BusinessLogicException(ExceptionCode.SHOULD_REGIST_USER_INFO);
+        }
+
+        if (!recruitingArticle.getAges().contains(userAge)) {
+            throw new BusinessLogicException(ExceptionCode.DO_NOT_CONFORM_TO_THE_ARTICLE);
+        }
     }
 }
