@@ -9,6 +9,8 @@ public enum ExceptionCode {
     NOT_ENTER_HERE(403, "게시글에 참여하지 않은 사용자입니다."),
     ADULT_CANT_SELECT_TEENAGER(403, "성인사용자는 10대 항목을 선택할 수 없습니다."),
     TEENAGER_SHOULD_SELECT_TEENAGER(303, "10대는 다른 나이대 항목을 선택할 수 없습니다."),
+    SHOULD_REGIST_USER_INFO(403, "회원정보 등록이 필요합니다."),
+    DO_NOT_CONFORM_TO_THE_ARTICLE(403, "회원정보가 게시글에 부합하지 않습니다."),
     UNAUTHORIZED(404, "권한이 없습니다" ),
     MOVIE_NOT_FOUND(404, "영화를 찾을 수 없습니다."),
     CAN_NOT_ENTER(404, "최대 인원을 초과하여 입장할 수 없습니다."),
