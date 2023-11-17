@@ -66,7 +66,7 @@ public class CrawlerServiceV2 {
     @Value("${crawler.kakao.key}")
     private String KAKAOKEY;
 
-    @Value("crawler.image")
+    @Value("${crawler.image}")
     private static String IMAGE_URL;
 
     // 영화 순위 크롤링 메서드 (1위 부터 5위까지)
