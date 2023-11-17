@@ -29,7 +29,7 @@ public class ChatController {
 
     // 메세지 전송
     // PathVariable 대신 DestinationVariable 사용 (PathVariable 활용하면 파싱 불가)
-    @MessageMapping("/recruit/{recruit-id}/chatroom")
+    @MessageMapping("/chatroom/{recruit-id}")
     public void sendMessage(@DestinationVariable("recruit-id") long recruitArticleId, ChatDto.Send chat) {
         Chat savedChat = chatService.saveChat(chatMapper.sendToChat(chat, recruitArticleId));
 
@@ -39,8 +39,8 @@ public class ChatController {
     }
 
     // 메세지 불러오기
-    @GetMapping("/chatroom/{chatroom-id}")
-    public ResponseEntity loadMessage(@PathVariable("chatroom-id") long recruitArticleId) {
+    @GetMapping("/chatroom/{recruit-id}")
+    public ResponseEntity loadMessage(@PathVariable("recruit-id") long recruitArticleId) {
         long authenticationMemberId = JwtParseInterceptor.getAuthenticatedMemberId();
         List<Chat> chatList = chatService.getChatMessage(recruitArticleId, authenticationMemberId);
 
