@@ -66,4 +66,22 @@ public class RecruitingArticleControllerTest implements RecruitingArticleControl
                 .andExpect(status().isOk())
                 .andDo(print());
     }
+
+    @Test
+    @DisplayName("게시글 수정 테스트")
+    public void patchRecruitingArticleTest() throws Exception {
+        // given
+        given(recruitingArticleMapper.patchToRecruitingArticle(Mockito.any(RecruitingArticleDto.PostPatch.class), Mockito.anyLong())).willReturn(new RecruitingArticle());
+
+        doNothing().when(recruitingArticleService).updateRecruitingArticle(Mockito.any(RecruitingArticle.class), Mockito.anyLong());
+
+        // when
+        ResultActions actions =
+                mockMvc.perform(patchRequestBuilder(RECRUITING_ARTICLE_RESOURCE_URI, 1L, StubData.getPostRecruitingArticleContent(), accessToken));
+
+        // then
+        actions
+                .andExpect(status().isOk())
+                .andDo(print());
+    }
 }
