@@ -5,6 +5,7 @@ import Moyoung.Server.cinema.entity.Cinema;
 import Moyoung.Server.member.dto.MemberDto;
 import Moyoung.Server.movie.dto.MovieDto;
 import Moyoung.Server.movie.entity.MovieRank;
+import Moyoung.Server.recruitingarticle.dto.RecruitingArticleDto;
 import Moyoung.Server.runningtime.entity.RunningTime;
 import com.google.gson.Gson;
 
@@ -131,5 +132,17 @@ public class StubData {
                 .ranks(
                         List.of(MovieDto.Rank.builder().rank(1).name("영화제목").thumbnailUrl("포스터 url").build())
                 ).build();
+    }
+
+    public static String getPostRecruitingArticleContent() {
+        Gson gson = new Gson();
+        RecruitingArticleDto.PostPatch content = new RecruitingArticleDto.PostPatch();
+        content.setTitle("제목");
+        content.setRunningTimeId(1L);
+        content.setMaxNum(4);
+        content.setGender(1);
+        content.setAges(List.of(1 ,2));
+
+        return gson.toJson(content);
     }
 }
