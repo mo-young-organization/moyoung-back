@@ -118,4 +118,47 @@ public class RecruitingArticleControllerTest implements RecruitingArticleControl
                 .andExpect(status().isOk())
                 .andDo(print());
     }
+
+    @Test
+    @DisplayName("로그인 게시글 불러오기 (필터 적용 가능)")
+    public void getRecruitingArticlesTest() throws Exception {
+        // given
+        String page = "1";
+        String size = "10";
+        String gender = "1";
+        String teenager = "true";
+        String twenties = "true";
+        String thirties = "true";
+        String x = "126.692549074164";
+        String y = "37.7180926232465";
+        String distance = "1000";
+        String keyword = "keyword";
+        String sort = "false";
+
+        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+        params.add("page", page);
+        params.add("size", size);
+        params.add("gender", gender);
+        params.add("teenager", teenager);
+        params.add("twenties", twenties);
+        params.add("thirties", thirties);
+        params.add("x", x);
+        params.add("y", y);
+        params.add("distance", distance);
+        params.add("keyword", keyword);
+        params.add("sort", sort);
+
+        given(recruitingArticleService.getRecruitingArticleList(Mockito.anyInt(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyBoolean(), Mockito.anyBoolean(), Mockito.anyBoolean(), Mockito.anyDouble(), Mockito.anyDouble(), Mockito.anyDouble(), Mockito.anyString(), Mockito.anyBoolean())).willReturn(StubData.getPageRecruitingArticle());
+
+        given(recruitingArticleMapper.recruitingArticlesToList(Mockito.anyList())).willReturn(StubData.getRecruitingArticleResponses());
+
+        // when
+        ResultActions actions =
+                mockMvc.perform(getRequestBuilder(RECRUITING_ARTICLE_URL, params, accessToken));
+
+        // then
+        actions
+                .andExpect(status().isOk())
+                .andDo(print());
+    }
 }
