@@ -90,6 +90,15 @@ public interface ControllerHelper<T> {
                 .accept(MediaType.APPLICATION_JSON);
     }
 
+    default RequestBuilder getRequestBuilder(String url, MultiValueMap<String, String> queryParams, String accessToken) {
+        return get(url)
+                .header("Authorization", "Bearer ".concat(accessToken))
+                .params(
+                        queryParams
+                )
+                .accept(MediaType.APPLICATION_JSON);
+    }
+
     default RequestBuilder deleteRequestBuilder(String url, String accessToken) {
         return delete(url)
                 .header("Authorization", "Bearer ".concat(accessToken));
