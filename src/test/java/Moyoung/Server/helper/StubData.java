@@ -6,8 +6,13 @@ import Moyoung.Server.member.dto.MemberDto;
 import Moyoung.Server.movie.dto.MovieDto;
 import Moyoung.Server.movie.entity.MovieRank;
 import Moyoung.Server.recruitingarticle.dto.RecruitingArticleDto;
+import Moyoung.Server.recruitingarticle.entity.RecruitingArticle;
 import Moyoung.Server.runningtime.entity.RunningTime;
 import com.google.gson.Gson;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -144,5 +149,50 @@ public class StubData {
         content.setAges(List.of(1 ,2));
 
         return gson.toJson(content);
+    }
+
+    public static List<RecruitingArticleDto.ResponseForList> getRecruitingArticleResponses() {
+        return List.of(RecruitingArticleDto.ResponseForList.builder()
+                    .recruitingArticleId(2L)
+                    .writerDisplayName("작성자 닉네임")
+                    .writerAge("작성자 연령대")
+                    .title("모집글 제목")
+                    .cinemaRegion("영화관 소재지")
+                    .cinemaName("영화관 이름")
+                    .cinemaBrand("영화관 브랜드")
+                    .movieThumbnailUrl("포스터 이미지 URL")
+                    .movieName("영화 제목")
+                    .movieRating("영화 관람 정보")
+                    .startTime(LocalDateTime.now())
+                    .screenInfo("영화 정보")
+                    .maxNum(3)
+                    .currentNum(2)
+                    .gender("잠여 성별 조건")
+                    .ages(List.of("참여 나이 요건")).build(),
+                RecruitingArticleDto.ResponseForList.builder()
+                    .recruitingArticleId(1L)
+                    .writerDisplayName("작성자 닉네임")
+                    .writerAge("작성자 연령대")
+                    .title("모집글 제목")
+                    .cinemaRegion("영화관 소재지")
+                    .cinemaName("영화관 이름")
+                    .cinemaBrand("영화관 브랜드")
+                    .movieThumbnailUrl("포스터 이미지 URL")
+                    .movieName("영화 제목")
+                    .movieRating("영화 관람 정보")
+                    .startTime(LocalDateTime.now())
+                    .screenInfo("영화 정보")
+                    .maxNum(3)
+                    .currentNum(2)
+                    .gender("잠여 성별 조건")
+                    .ages(List.of("참여 나이 요건")).build());
+    }
+
+    public static Page<RecruitingArticle> getPageRecruitingArticle() {
+        RecruitingArticle recruitingArticle1 = new RecruitingArticle();
+        RecruitingArticle recruitingArticle2 = new RecruitingArticle();
+
+        return new PageImpl<>(List.of(recruitingArticle1, recruitingArticle2),
+                PageRequest.of(0, 10, Sort.by("recruitingArticleId").descending()), 2);
     }
 }
