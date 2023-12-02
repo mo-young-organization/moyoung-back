@@ -19,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
@@ -155,6 +154,24 @@ public class RecruitingArticleControllerTest implements RecruitingArticleControl
         // when
         ResultActions actions =
                 mockMvc.perform(getRequestBuilder(RECRUITING_ARTICLE_URL, params, accessToken));
+
+        // then
+        actions
+                .andExpect(status().isOk())
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("게시글 정보 불러오기 테스트")
+    public void getRecruitingArticleTest() throws Exception {
+        // given
+        given(recruitingArticleService.getRecruitingArticle(Mockito.anyLong(), Mockito.anyLong())).willReturn(new RecruitingArticle());
+
+        given(recruitingArticleMapper.recruitingArticleToResponse(Mockito.any(RecruitingArticle.class))).willReturn(StubData.getRecruitingArticleResponse());
+
+        // when
+        ResultActions actions =
+                mockMvc.perform(getRequestBuilder(RECRUITING_ARTICLE_RESOURCE_URI, 1L, accessToken));
 
         // then
         actions
