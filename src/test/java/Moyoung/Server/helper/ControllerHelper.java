@@ -99,6 +99,12 @@ public interface ControllerHelper<T> {
                 .accept(MediaType.APPLICATION_JSON);
     }
 
+    default RequestBuilder getRequestBuilder(String url, long resourceId, String accessToken) {
+        return get(url, resourceId)
+                .header("Authorization", "Bearer ".concat(accessToken))
+                .accept(MediaType.APPLICATION_JSON);
+    }
+
     default RequestBuilder deleteRequestBuilder(String url, String accessToken) {
         return delete(url)
                 .header("Authorization", "Bearer ".concat(accessToken));
