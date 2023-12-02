@@ -151,6 +151,33 @@ public class StubData {
         return gson.toJson(content);
     }
 
+    public static RecruitingArticleDto.Response getRecruitingArticleResponse() {
+        return RecruitingArticleDto.Response.builder()
+                .recruitingArticleId(1L)
+                .writerMemberId(1L)
+                .writerDisplayName("작성자 닉네임")
+                .writerAge("작성자 연령대")
+                .writerGender("작성자 성별")
+                .title("모집글 제목")
+                .cinemaRegion("영화관 소재지")
+                .cinemaName("영화관 이름")
+                .cinemaBrand("영화관 브랜드")
+                .movieThumbnailUrl("포스터 이미지 URL")
+                .movieName("영화 제목")
+                .movieRating("영화 관람 등급")
+                .startTime(LocalDateTime.now())
+                .screenInfo("영화 정보")
+                .maxNum(3)
+                .currentNum(2)
+                .gender("참여 성별 조건")
+                .ages(List.of("참여 나이 요건"))
+                .userInfos(List.of(RecruitingArticleDto.UserInfo.builder()
+                        .memberId(1L)
+                        .gender("참여자 성별")
+                        .displayName("참여자 닉네임")
+                        .age("참여자 연령대").build())).build();
+    }
+
     public static List<RecruitingArticleDto.ResponseForList> getRecruitingArticleResponses() {
         return List.of(RecruitingArticleDto.ResponseForList.builder()
                     .recruitingArticleId(2L)
@@ -162,12 +189,12 @@ public class StubData {
                     .cinemaBrand("영화관 브랜드")
                     .movieThumbnailUrl("포스터 이미지 URL")
                     .movieName("영화 제목")
-                    .movieRating("영화 관람 정보")
+                    .movieRating("영화 관람 등급")
                     .startTime(LocalDateTime.now())
                     .screenInfo("영화 정보")
                     .maxNum(3)
                     .currentNum(2)
-                    .gender("잠여 성별 조건")
+                    .gender("참여 성별 조건")
                     .ages(List.of("참여 나이 요건")).build(),
                 RecruitingArticleDto.ResponseForList.builder()
                     .recruitingArticleId(1L)
@@ -179,12 +206,12 @@ public class StubData {
                     .cinemaBrand("영화관 브랜드")
                     .movieThumbnailUrl("포스터 이미지 URL")
                     .movieName("영화 제목")
-                    .movieRating("영화 관람 정보")
+                    .movieRating("영화 관람 등급")
                     .startTime(LocalDateTime.now())
                     .screenInfo("영화 정보")
                     .maxNum(3)
                     .currentNum(2)
-                    .gender("잠여 성별 조건")
+                    .gender("참여 성별 조건")
                     .ages(List.of("참여 나이 요건")).build());
     }
 
