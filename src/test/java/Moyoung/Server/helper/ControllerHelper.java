@@ -35,13 +35,11 @@ public interface ControllerHelper<T> {
     }
     default RequestBuilder postRequestBuilder(String url,
                                               long resourceId,
-                                              String content,
                                               String accessToken) {
         return  post(url, resourceId)
                 .header("Authorization", "Bearer ".concat(accessToken))
                 .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(content);
+                .contentType(MediaType.APPLICATION_JSON);
     }
 
     default RequestBuilder patchRequestBuilder(String url,

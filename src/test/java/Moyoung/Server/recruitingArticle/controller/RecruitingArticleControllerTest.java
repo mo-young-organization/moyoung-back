@@ -178,4 +178,52 @@ public class RecruitingArticleControllerTest implements RecruitingArticleControl
                 .andExpect(status().isOk())
                 .andDo(print());
     }
+
+    @Test
+    @DisplayName("게시글 삭제 테스트")
+    public void deleteRecruitingArticleTest() throws Exception {
+        // given
+        doNothing().when(recruitingArticleService).deleteRecruitingArticle(Mockito.anyLong(), Mockito.anyLong());
+
+        // when
+        ResultActions actions =
+                mockMvc.perform(deleteRequestBuilder(RECRUITING_ARTICLE_RESOURCE_URI, 1L, accessToken));
+
+        // then
+        actions
+                .andExpect(status().isOk())
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("게시글 입장 테스트")
+    public void enterArticleTest() throws Exception {
+        // given
+        doNothing().when(recruitingArticleService).enterRecruit(Mockito.anyLong(), Mockito.anyLong());
+
+        // when
+        ResultActions actions =
+                mockMvc.perform(postRequestBuilder(RECRUITING_ARTICLE_ENTER_URL, 1L, accessToken));
+
+        // then
+        actions
+                .andExpect(status().isOk())
+                .andDo(print());
+    }
+
+    @Test
+    @DisplayName("게시글 퇴장 테스트")
+    public void leaveArticleTest() throws Exception {
+        // given
+        doNothing().when(recruitingArticleService).leaveRecruit(Mockito.anyLong(), Mockito.anyLong());
+
+        // when
+        ResultActions actions =
+                mockMvc.perform(deleteRequestBuilder(RECRUITING_ARTICLE_LEAVE_URL, 1L, accessToken));
+
+        // then
+        actions
+                .andExpect(status().isOk())
+                .andDo(print());
+    }
 }
