@@ -210,4 +210,20 @@ public class RecruitingArticleControllerTest implements RecruitingArticleControl
                 .andExpect(status().isOk())
                 .andDo(print());
     }
+
+    @Test
+    @DisplayName("게시글 퇴장 테스트")
+    public void leaveArticleTest() throws Exception {
+        // given
+        doNothing().when(recruitingArticleService).leaveRecruit(Mockito.anyLong(), Mockito.anyLong());
+
+        // when
+        ResultActions actions =
+                mockMvc.perform(deleteRequestBuilder(RECRUITING_ARTICLE_LEAVE_URL, 1L, accessToken));
+
+        // then
+        actions
+                .andExpect(status().isOk())
+                .andDo(print());
+    }
 }
