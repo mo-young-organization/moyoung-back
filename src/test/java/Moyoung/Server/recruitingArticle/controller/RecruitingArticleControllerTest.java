@@ -194,4 +194,20 @@ public class RecruitingArticleControllerTest implements RecruitingArticleControl
                 .andExpect(status().isOk())
                 .andDo(print());
     }
+
+    @Test
+    @DisplayName("게시글 입장 테스트")
+    public void enterArticleTest() throws Exception {
+        // given
+        doNothing().when(recruitingArticleService).enterRecruit(Mockito.anyLong(), Mockito.anyLong());
+
+        // when
+        ResultActions actions =
+                mockMvc.perform(postRequestBuilder(RECRUITING_ARTICLE_ENTER_URL, 1L, accessToken));
+
+        // then
+        actions
+                .andExpect(status().isOk())
+                .andDo(print());
+    }
 }
