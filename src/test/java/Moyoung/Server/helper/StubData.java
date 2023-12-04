@@ -1,12 +1,15 @@
 package Moyoung.Server.helper;
 
 import Moyoung.Server.auth.jwt.JwtTokenizer;
+import Moyoung.Server.cinema.dto.CinemaDto;
 import Moyoung.Server.cinema.entity.Cinema;
+import Moyoung.Server.cinema.entity.CinemaPlus;
 import Moyoung.Server.member.dto.MemberDto;
 import Moyoung.Server.movie.dto.MovieDto;
 import Moyoung.Server.movie.entity.MovieRank;
 import Moyoung.Server.recruitingarticle.dto.RecruitingArticleDto;
 import Moyoung.Server.recruitingarticle.entity.RecruitingArticle;
+import Moyoung.Server.runningtime.dto.RunningTimeDto;
 import Moyoung.Server.runningtime.entity.RunningTime;
 import com.google.gson.Gson;
 import org.springframework.data.domain.Page;
@@ -221,5 +224,41 @@ public class StubData {
 
         return new PageImpl<>(List.of(recruitingArticle1, recruitingArticle2),
                 PageRequest.of(0, 10, Sort.by("recruitingArticleId").descending()), 2);
+    }
+
+    public static List<CinemaPlus> getCinemaPlusList() {
+        return List.of(
+                new CinemaPlus()
+        );
+    }
+
+    public static CinemaDto.NearResponse getNearResponse() {
+        return CinemaDto.NearResponse.builder()
+                .movieInfo(MovieDto.NearResponse.builder()
+                        .movieId(1L)
+                        .name("영화 제목")
+                        .enName("영화 영어 제목")
+                        .thumbnailUrl("포스터 이미지 URL")
+                        .genre("영화 장르")
+                        .showTm("영화 상영 시간")
+                        .movieRating("영화 관람 등급")
+                        .releaseDate("영화 개봉일")
+                        .info("영화 정보").build())
+                .cinemaInfo(List.of(CinemaDto.Response.builder()
+                        .cinemaId(1L)
+                        .brand("영화관 브랜드")
+                        .name("영화관 이름")
+                        .address("영화관 주소")
+                        .x(126.905217202756)
+                        .y(37.4863264672324)
+                        .screenInfoList(List.of(CinemaDto.ScreenInfo.builder()
+                                .screenInfo("상영관 정보")
+                                .runningTimeList(List.of(RunningTimeDto.Response.builder()
+                                        .runningTimeId(1L)
+                                        .startTime(LocalDateTime.now())
+                                        .endTime(LocalDateTime.now()).build())
+                                ).build()))
+                        .build()))
+                .build();
     }
 }
