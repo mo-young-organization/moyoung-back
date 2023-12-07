@@ -35,13 +35,11 @@ public interface ControllerHelper<T> {
     }
     default RequestBuilder postRequestBuilder(String url,
                                               long resourceId,
-                                              String content,
                                               String accessToken) {
         return  post(url, resourceId)
                 .header("Authorization", "Bearer ".concat(accessToken))
                 .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(content);
+                .contentType(MediaType.APPLICATION_JSON);
     }
 
     default RequestBuilder patchRequestBuilder(String url,
@@ -87,6 +85,21 @@ public interface ControllerHelper<T> {
                 .params(
                         queryParams
                 )
+                .accept(MediaType.APPLICATION_JSON);
+    }
+
+    default RequestBuilder getRequestBuilder(String url, MultiValueMap<String, String> queryParams, String accessToken) {
+        return get(url)
+                .header("Authorization", "Bearer ".concat(accessToken))
+                .params(
+                        queryParams
+                )
+                .accept(MediaType.APPLICATION_JSON);
+    }
+
+    default RequestBuilder getRequestBuilder(String url, long resourceId, String accessToken) {
+        return get(url, resourceId)
+                .header("Authorization", "Bearer ".concat(accessToken))
                 .accept(MediaType.APPLICATION_JSON);
     }
 
