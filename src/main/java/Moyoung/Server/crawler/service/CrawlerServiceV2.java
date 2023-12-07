@@ -67,7 +67,7 @@ public class CrawlerServiceV2 {
     private String KAKAOKEY;
 
     @Value("${crawler.image}")
-    private static String IMAGE_URL;
+    private String IMAGE_URL;
 
     // 영화 순위 크롤링 메서드 (1위 부터 5위까지)
     // 0시 0분 5초에 받아오려 했으나 데이터 갱신되려면 시간이 조금 필요한 듯 하다
@@ -245,7 +245,7 @@ public class CrawlerServiceV2 {
         return movie;
     }
 
-    private static boolean movieHasNullOrEmpty(Movie movie) {
+    private boolean movieHasNullOrEmpty(Movie movie) {
         return movie.getShowTm() == null || movie.getName() == null || movie.getEnName() == null || movie.getThumbnailUrl() == null
                 || movie.getMovieRating() == null || movie.getInfo() == null || movie.getReleaseDate() == null
                 || movie.getGenre() == null || movie.getCountry() == null || movie.getShowTm().isEmpty()
