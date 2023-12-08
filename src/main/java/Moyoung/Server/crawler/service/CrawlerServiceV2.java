@@ -234,25 +234,13 @@ public class CrawlerServiceV2 {
     }
 
     private Movie reCrawlMovieInfo(LocalDate playDate, CloseableHttpClient httpClient, Gson gson, String movieNm, String movieCd, Movie movie) throws IOException {
-        if (movieHasNullOrEmpty(movie)) {
-            if (!movie.getLastAddedAt().equals(playDate)) {
-                log.info("MovieReload: {}", movie.getName());
-                movie.setGenre(null);
-                movie.setCountry(null);
-                movie = crawlMovieInfo(httpClient, gson, movieNm, movieCd, movie);
-            }
+        if (!movie.getLastAddedAt().equals(playDate)) {
+            log.info("MovieReload: {}", movie.getName());
+            movie.setGenre(null);
+            movie.setCountry(null);
+            movie = crawlMovieInfo(httpClient, gson, movieNm, movieCd, movie);
         }
         return movie;
-    }
-
-    private boolean movieHasNullOrEmpty(Movie movie) {
-        return movie.getShowTm() == null || movie.getName() == null || movie.getEnName() == null || movie.getThumbnailUrl() == null
-                || movie.getMovieRating() == null || movie.getInfo() == null || movie.getReleaseDate() == null
-                || movie.getGenre() == null || movie.getCountry() == null || movie.getShowTm().isEmpty()
-                || movie.getName().isEmpty() || movie.getEnName().isEmpty() || movie.getThumbnailUrl().isEmpty()
-                || movie.getMovieRating().isEmpty() || movie.getInfo().isEmpty() || movie.getReleaseDate().isEmpty()
-                || movie.getGenre().isEmpty() || movie.getCountry().isEmpty()
-                || movie.getThumbnailUrl().equals(IMAGE_URL + "#");
     }
 
     @NotNull

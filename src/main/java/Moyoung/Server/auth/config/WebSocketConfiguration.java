@@ -1,6 +1,6 @@
-package Moyoung.Server.config;
+package Moyoung.Server.auth.config;
 
-import Moyoung.Server.stomp.StompHandler;
+import Moyoung.Server.auth.stomp.StompHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -11,7 +11,7 @@ import org.springframework.web.socket.config.annotation.*;
 @Configuration
 @EnableWebSocketMessageBroker
 @RequiredArgsConstructor
-public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
+public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer {
     private final StompHandler stompHandler;
 
     @Value("${moyoung.cors}")
