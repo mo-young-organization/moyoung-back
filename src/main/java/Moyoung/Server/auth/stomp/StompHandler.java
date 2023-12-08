@@ -1,4 +1,4 @@
-package Moyoung.Server.stomp;
+package Moyoung.Server.auth.stomp;
 
 import Moyoung.Server.auth.utils.JwtUtils;
 import lombok.RequiredArgsConstructor;

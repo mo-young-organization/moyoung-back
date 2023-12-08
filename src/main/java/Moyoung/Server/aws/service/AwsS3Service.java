@@ -1,4 +1,4 @@
-package Moyoung.Server.aws;
+package Moyoung.Server.aws.service;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
