@@ -37,9 +37,11 @@ public class SecurityConfiguration implements WebMvcConfigurer {
 
     private final MemberService memberService;
     private final TokenService tokenService;
-    public SecurityConfiguration(@Lazy MemberService memberService, @Lazy TokenService tokenService) {
+    private final OAuth2MemberSuccessHandler oAuth2MemberSuccessHandler;
+    public SecurityConfiguration(@Lazy MemberService memberService, @Lazy TokenService tokenService, @Lazy OAuth2MemberSuccessHandler oAuth2MemberSuccessHandler) {
         this.memberService = memberService;
         this.tokenService = tokenService;
+        this.oAuth2MemberSuccessHandler = oAuth2MemberSuccessHandler;
     }
 
     @Value("${moyoung.cors}")
@@ -47,7 +49,6 @@ public class SecurityConfiguration implements WebMvcConfigurer {
 
     @Value("${moyoung.callback}")
     private String callbackUrl;
-
 
 
     @Bean
@@ -86,6 +87,7 @@ public class SecurityConfiguration implements WebMvcConfigurer {
                 )
                 .oauth2Login()
                 .successHandler(new OAuth2MemberSuccessHandler(memberService, tokenService, callbackUrl));
+
         return http.build();
     }
 

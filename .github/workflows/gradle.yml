@@ -1,0 +1,43 @@
+# MoYoung-deploy.yml
+
+
+name: MoYoung-deploy to Amazon EC2
+
+on:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      - name: SSH Commands
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.AWS_SSH_HOST }}
+          username: ${{ secrets.AWS_SSH_USERNAME }}
+          key: ${{ secrets.AWS_SSH_KEY }}
+          port: ${{ secrets.AWS_SSH_PORT }}
+          script_stop: true
+          script: |
+            
+            cd ~/moyoung-back
+            lsof -i :8080 || true
+            fuser -k -n tcp 8080 || true
+            git pull origin main
+            echo ${{ secrets.APPLICATION_YML }} | base64 --decode > src/main/resources/application.yml            
+            ./gradlew build
+            cd build/libs
+            nohup java -jar Server-0.0.1-SNAPSHOT.jar 1>output.log 2>error.log &
