@@ -1,4 +1,4 @@
-package Moyoung.Server.config;
+package Moyoung.Server.aws.config;
 
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;

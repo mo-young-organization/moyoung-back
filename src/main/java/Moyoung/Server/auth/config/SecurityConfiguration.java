@@ -1,4 +1,4 @@
-package Moyoung.Server.config;
+package Moyoung.Server.auth.config;
 
 import Moyoung.Server.auth.filter.JwtAuthenticationFilter;
 import Moyoung.Server.auth.filter.JwtVerificationFilter;
