@@ -252,7 +252,7 @@ public class CrawlerServiceV2 {
                 || movie.getName().isEmpty() || movie.getEnName().isEmpty() || movie.getThumbnailUrl().isEmpty()
                 || movie.getMovieRating().isEmpty() || movie.getInfo().isEmpty() || movie.getReleaseDate().isEmpty()
                 || movie.getGenre().isEmpty() || movie.getCountry().isEmpty()
-                || movie.getThumbnailUrl().equals(IMAGE_URL + "#");
+                || movie.getThumbnailUrl().equals(IMAGE_URL + "#") || movie.getThumbnailUrl().contains("null");
     }
 
     @NotNull
