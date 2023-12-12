@@ -6,6 +6,7 @@ import Moyoung.Server.recruitingarticle.dto.RecruitingArticleDto;
 import Moyoung.Server.recruitingarticle.entity.RecruitingArticle;
 import Moyoung.Server.recruitingarticle.mapper.RecruitingArticleMapper;
 import Moyoung.Server.recruitingarticle.service.RecruitingArticleService;
+import jakarta.validation.constraints.Positive;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -13,7 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.constraints.Positive;
 import java.util.List;
 
 @RestController
