@@ -1,9 +1,8 @@
 package Moyoung.Server.validator;
 
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import org.springframework.util.StringUtils;
-
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
 
 public class NotSpaceValidator implements ConstraintValidator<NotSpace, String> {
 

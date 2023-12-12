@@ -1,12 +1,12 @@
 package Moyoung.Server.response;
 
 import Moyoung.Server.exception.ExceptionCode;
+import jakarta.validation.ConstraintViolation;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 
-import javax.validation.ConstraintViolation;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
