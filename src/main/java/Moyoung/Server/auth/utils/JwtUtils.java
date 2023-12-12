@@ -4,10 +4,10 @@ import Moyoung.Server.auth.jwt.JwtTokenizer;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.jwt.JwtException;
 
-import javax.servlet.http.HttpServletRequest;
 import java.security.SignatureException;
 import java.util.Map;
 

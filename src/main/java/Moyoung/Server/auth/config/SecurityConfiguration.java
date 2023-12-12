@@ -81,8 +81,8 @@ public class SecurityConfiguration implements WebMvcConfigurer {
                 .logoutSuccessUrl("/")
 
                 .and()
-                .authorizeHttpRequests(authorize -> authorize
-                        .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .authorizeRequests(authorize -> authorize
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().permitAll()
                 )
                 .oauth2Login()
