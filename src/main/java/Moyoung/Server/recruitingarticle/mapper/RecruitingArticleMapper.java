@@ -9,7 +9,8 @@ import org.mapstruct.Mapper;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 @Mapper(componentModel = "spring")
 public interface RecruitingArticleMapper {
@@ -93,7 +94,7 @@ public interface RecruitingArticleMapper {
     default List<RecruitingArticleDto.ResponseForList> recruitingArticlesToList(List<RecruitingArticle> recruitingArticles) {
         return recruitingArticles.stream()
                 .map(recruitingArticle -> recruitingArticleToResponseForList(recruitingArticle))
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     default RecruitingArticleDto.ResponseForList recruitingArticleToResponseForList(RecruitingArticle recruitingArticle) {
@@ -116,7 +117,7 @@ public interface RecruitingArticleMapper {
                 .maxNum(recruitingArticle.getMaxNum())
                 .currentNum(recruitingArticle.getCurrentNum())
                 .gender(recruitingArticle.getGender().getExplain())
-                .ages(recruitingArticle.getAges().stream().map(age -> age.getAge()).collect(Collectors.toList())).build();
+                .ages(recruitingArticle.getAges().stream().map(age -> age.getAge()).collect(toList())).build();
     }
 
     default RecruitingArticleDto.Response recruitingArticleToResponse(RecruitingArticle recruitingArticle) {
@@ -140,14 +141,14 @@ public interface RecruitingArticleMapper {
                 .maxNum(recruitingArticle.getMaxNum())
                 .currentNum(recruitingArticle.getCurrentNum())
                 .gender(recruitingArticle.getGender().getExplain())
-                .ages(recruitingArticle.getAges().stream().map(age -> age.getAge()).collect(Collectors.toList()))
+                .ages(recruitingArticle.getAges().stream().map(age -> age.getAge()).collect(toList()))
                 .userInfos(chatRoomInfoListToUserInfoList(recruitingArticle.getChatRoomInfos())).build();
     }
 
     default List<RecruitingArticleDto.UserInfo> chatRoomInfoListToUserInfoList(List<ChatRoomInfo> chatRoomInfoList) {
         return chatRoomInfoList.stream()
                 .map(chatRoomInfo -> chatRoomInfoToUserInfo(chatRoomInfo))
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     default RecruitingArticleDto.UserInfo chatRoomInfoToUserInfo(ChatRoomInfo chatRoomInfo) {
