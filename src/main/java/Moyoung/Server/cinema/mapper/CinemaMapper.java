@@ -9,7 +9,8 @@ import Moyoung.Server.runningtime.entity.RunningTime;
 import org.mapstruct.Mapper;
 
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 @Mapper(componentModel = "spring")
 public interface CinemaMapper {
@@ -31,7 +32,7 @@ public interface CinemaMapper {
     default List<CinemaDto.Response> cinemaPlusListToCinemaDtoResonseList(List<CinemaPlus> cinemaPlusList) {
         return cinemaPlusList.stream()
                 .map(cinemaPlus -> cinemaPlusToCinemaDtoResponse(cinemaPlus))
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     default CinemaDto.Response cinemaPlusToCinemaDtoResponse(CinemaPlus cinemaPlus) {
@@ -48,7 +49,7 @@ public interface CinemaMapper {
     default List<CinemaDto.ScreenInfo> screenInfoListToCinemaDtoScreenInfoList(List<CinemaPlus.ScreenInfo> screenInfoList) {
         return screenInfoList.stream()
                 .map(screenInfo -> screenInfoToCinemaDtoScreenInfo(screenInfo))
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     default CinemaDto.ScreenInfo screenInfoToCinemaDtoScreenInfo(CinemaPlus.ScreenInfo screenInfo) {
@@ -60,7 +61,7 @@ public interface CinemaMapper {
     default List<RunningTimeDto.Response> runningTimeListToRunningTimeDtoReponseList(List<RunningTime> runningTimeList) {
         return runningTimeList.stream()
                 .map(runningTime -> runningTimeToRunningTimeDtoResponse(runningTime))
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     default RunningTimeDto.Response runningTimeToRunningTimeDtoResponse(RunningTime runningTime) {
