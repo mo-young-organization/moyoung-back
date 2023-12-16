@@ -1,6 +1,7 @@
 package Moyoung.Server.auth.filter;
 
 import Moyoung.Server.auth.jwt.TokenService;
+import Moyoung.Server.auth.utils.CustomAuthorityUtils;
 import Moyoung.Server.auth.utils.JwtUtils;
 import Moyoung.Server.member.entity.Member;
 import Moyoung.Server.member.service.MemberService;
@@ -13,18 +14,21 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 @RequiredArgsConstructor
 public class JwtVerificationFilter extends OncePerRequestFilter {
     private final JwtUtils jwtUtils;
+    private final CustomAuthorityUtils authorityUtils;
     private final TokenService tokenService;
     private final MemberService memberService;
 
@@ -94,7 +98,8 @@ public class JwtVerificationFilter extends OncePerRequestFilter {
 
     private void setAuthenticationToContext(Map<String, Object> claims) {
         String userId = (String) claims.get("id");
-        Authentication authentication = new UsernamePasswordAuthenticationToken(userId, null);
+        List<GrantedAuthority> authorities = authorityUtils.createAuthorities((List) claims.get("roles"));
+        Authentication authentication = new UsernamePasswordAuthenticationToken(userId, null, authorities);
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 }
