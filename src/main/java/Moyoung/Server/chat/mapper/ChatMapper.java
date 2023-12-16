@@ -9,7 +9,8 @@ import org.mapstruct.Mapper;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.toList;
 
 @Mapper(componentModel = "spring")
 public interface ChatMapper {
@@ -30,7 +31,7 @@ public interface ChatMapper {
     default List<ChatDto.ChatRoomResponse> chatRoomInfosToList(List<ChatRoomInfo> chatRoomInfoList) {
         return chatRoomInfoList.stream()
                 .map(chatRoomInfo -> chatRoomInfoToResponse(chatRoomInfo))
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     default ChatDto.ChatRoomResponse chatRoomInfoToResponse(ChatRoomInfo chatRoomInfo) {
@@ -51,7 +52,7 @@ public interface ChatMapper {
     default List<ChatDto.Response> chatsToList(List<Chat> chatList) {
         return chatList.stream()
                 .map(chat -> chatToResponse(chat))
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     default ChatDto.Response chatToResponse(Chat chat) {

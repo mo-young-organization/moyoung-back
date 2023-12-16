@@ -6,6 +6,7 @@ import Moyoung.Server.auth.handler.*;
 import Moyoung.Server.auth.interceptor.JwtParseInterceptor;
 import Moyoung.Server.auth.jwt.JwtTokenizer;
 import Moyoung.Server.auth.jwt.TokenService;
+import Moyoung.Server.auth.utils.CustomAuthorityUtils;
 import Moyoung.Server.auth.utils.JwtUtils;
 import Moyoung.Server.member.service.MemberService;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,11 +38,9 @@ public class SecurityConfiguration implements WebMvcConfigurer {
 
     private final MemberService memberService;
     private final TokenService tokenService;
-    private final OAuth2MemberSuccessHandler oAuth2MemberSuccessHandler;
-    public SecurityConfiguration(@Lazy MemberService memberService, @Lazy TokenService tokenService, @Lazy OAuth2MemberSuccessHandler oAuth2MemberSuccessHandler) {
+    public SecurityConfiguration(@Lazy MemberService memberService, @Lazy TokenService tokenService) {
         this.memberService = memberService;
         this.tokenService = tokenService;
-        this.oAuth2MemberSuccessHandler = oAuth2MemberSuccessHandler;
     }
 
     @Value("${moyoung.cors}")
@@ -121,7 +120,7 @@ public class SecurityConfiguration implements WebMvcConfigurer {
             jwtAuthenticationFilter.setAuthenticationSuccessHandler(new MemberAuthenticationSuccessHandler());
             jwtAuthenticationFilter.setAuthenticationFailureHandler(new MemberAuthenticationFailureHandler());
 
-            JwtVerificationFilter jwtVerificationFilter = new JwtVerificationFilter(jwtUtils(), tokenService, memberService);
+            JwtVerificationFilter jwtVerificationFilter = new JwtVerificationFilter(jwtUtils(), authorityUtils(), tokenService, memberService);
 
             builder
                     .addFilter(jwtAuthenticationFilter)
@@ -137,6 +136,11 @@ public class SecurityConfiguration implements WebMvcConfigurer {
     @Bean
     public JwtTokenizer jwtTokenizer() {
         return new JwtTokenizer();
+    }
+
+    @Bean
+    public CustomAuthorityUtils authorityUtils() {
+        return new CustomAuthorityUtils();
     }
 
     @Override
