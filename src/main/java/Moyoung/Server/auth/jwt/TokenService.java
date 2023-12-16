@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -22,6 +23,10 @@ public class TokenService {
         Map<String, Object> claims = new HashMap<>();
         claims.put("memberId", member.getMemberId());
         claims.put("id", member.getId());
+
+        List<String> roles = member.getRoles();
+
+        claims.put("roles", roles);
 
         Date expiration = jwtTokenizer.getTokenExpiration(jwtTokenizer.getAccessTokenExpirationMinutes());
 
