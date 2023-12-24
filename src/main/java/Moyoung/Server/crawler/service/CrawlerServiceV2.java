@@ -69,7 +69,7 @@ public class CrawlerServiceV2 {
     @Value("${crawler.image}")
     private String IMAGE_URL;
 
-    // 영화 순위 크롤링 메서드 (1위 부터 5위까지)
+    // 영화 순위 크롤링 메서드 (1위 부터 10위까지)
     // 0시 0분 5초에 받아오려 했으나 데이터 갱신되려면 시간이 조금 필요한 듯 하다
     @Scheduled(cron = "0 0 12 * * *") // 매일 12시 0분 0초 실행
     public void crawlMovieRank() throws IOException {
@@ -112,7 +112,18 @@ public class CrawlerServiceV2 {
                     movieRank.setDate(date);
                     movieRank.setMovieRank(i + 1);
 
-                    Movie movie = movieRepository.findAllByNameContains(dailyBoxOffices[i].getMovieNm()).get(0);
+                    RankResponse.DailyBoxOffice dailyBoxOffice = dailyBoxOffices[i];
+                    String movieNm = dailyBoxOffice.getMovieNm();
+
+                    Movie movie = new Movie();
+
+                    try {
+                        movie = movieRepository.findAllByNameContains(movieNm).get(0);
+                    } catch (IndexOutOfBoundsException e) { // 영화 정보가 없을 경우
+                        movie = crawlMovieInfo(httpClient, gson, movieNm, dailyBoxOffice.getMovieCd(), movie);
+                        movie = movieRepository.save(movie);
+                    }
+
                     movieRank.setMovie(movie);
 
                     movieRankRepository.save(movieRank);
