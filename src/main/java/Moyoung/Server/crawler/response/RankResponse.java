@@ -20,5 +20,7 @@ public class RankResponse {
         private String rank;
         @SerializedName("movieNm")
         private String movieNm;
+        @SerializedName("movieCd")
+        private String movieCd;
     }
 }
