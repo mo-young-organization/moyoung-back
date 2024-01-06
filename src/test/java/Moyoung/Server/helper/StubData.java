@@ -261,4 +261,15 @@ public class StubData {
                         .build()))
                 .build();
     }
+
+    public static List<RunningTimeDto.ArticleListResponse> getRunningTimeArticleList() {
+        return List.of(
+                RunningTimeDto.ArticleListResponse.builder()
+                        .recruitingArticleId(1)
+                        .title("모집글 제목")
+                        .maxNum(3)
+                        .currentNum(2)
+                        .gender("참여 성별 조건")
+                        .ages(List.of("참여 나이 요건")).build());
+    }
 }
