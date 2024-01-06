@@ -45,6 +45,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -144,7 +145,7 @@ public class CrawlerServiceV2 {
         LocalDate currentDate = LocalDate.now();
 
         // 현재 날짜에서 5일을 더한 날짜 계산
-        LocalDate playDate = currentDate;//plus(5, ChronoUnit.DAYS);
+        LocalDate playDate = currentDate.plus(5, ChronoUnit.DAYS);
 
         // 날짜 포맷 지정 (yyyyMMdd 형식으로)
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
