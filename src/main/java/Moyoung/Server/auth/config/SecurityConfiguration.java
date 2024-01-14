@@ -81,6 +81,7 @@ public class SecurityConfiguration implements WebMvcConfigurer {
 
                 .and()
                 .authorizeRequests(authorize -> authorize
+                        .requestMatchers(HttpMethod.POST, "/manual/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().permitAll()
                 )

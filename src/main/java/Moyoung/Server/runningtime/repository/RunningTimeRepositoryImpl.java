@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 public class RunningTimeRepositoryImpl implements RunningTimeRepositoryCustom {
@@ -66,5 +67,19 @@ public class RunningTimeRepositoryImpl implements RunningTimeRepositoryCustom {
                 .delete(rt)
                 .where(rt.recruitingArticles.isEmpty().and(rt.startTime.before(localDateTime)))
                 .execute();
+    }
+
+    @Override
+    public Optional<RunningTime> findRunningTimeCinemaAndStartTimeAndScreenInfo(Cinema cinema, LocalDateTime startTime, String screenInfo) {
+        QRunningTime rt = QRunningTime.runningTime;
+
+        return Optional.ofNullable(
+                queryFactory
+                        .selectFrom(rt)
+                        .where(rt.cinema.eq(cinema)
+                                .and(rt.startTime.eq(startTime))
+                                .and(rt.screenInfo.eq(screenInfo)))
+                        .fetchOne()
+        );
     }
 }

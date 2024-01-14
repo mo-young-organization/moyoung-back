@@ -6,6 +6,7 @@ import Moyoung.Server.runningtime.entity.RunningTime;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface RunningTimeRepositoryCustom {
     List<RunningTime> findRunningTimesByCinemaAndStartTimeBetweenAndMovieNameContaining(
@@ -18,4 +19,9 @@ public interface RunningTimeRepositoryCustom {
             Cinema cinema, Movie movie, LocalDateTime startOfDate, LocalDateTime endOfDate);
 
     void deleteAllByRecruitingArticlesIsEmptyAndStartTimeBefore(LocalDateTime localDateTime);
+
+    Optional<RunningTime> findRunningTimeCinemaAndStartTimeAndScreenInfo(
+            Cinema cinema,
+            LocalDateTime startTime,
+            String screenInfo);
 }
