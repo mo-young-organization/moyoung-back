@@ -1,5 +1,6 @@
 package Moyoung.Server.member.service;
 
+import Moyoung.Server.auth.utils.CustomAuthorityUtils;
 import Moyoung.Server.exception.BusinessLogicException;
 import Moyoung.Server.exception.ExceptionCode;
 import Moyoung.Server.member.dto.MemberDto;
@@ -9,11 +10,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class MemberService {
+
+    private final CustomAuthorityUtils authorityUtils;
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -21,7 +25,15 @@ public class MemberService {
     public void joinInLocal(Member member) {
         verifyExistingId(member.getId());
         member.setPassword(passwordEncoder.encode(member.getPassword()));
+        createRoles(member);
+
         memberRepository.save(member);
+    }
+
+    private void createRoles(Member member) {
+        // 역할 생성
+        List<String> authorities = authorityUtils.createRoles(member.getId());
+        member.setRoles(authorities);
     }
 
     // 회원 정보 등록
@@ -55,6 +67,7 @@ public class MemberService {
     // 오어스 회원 가입
     public Member joinInOauth(Member member) {
         verifyExistingId(member.getId());
+        createRoles(member);
 
         return memberRepository.save(member);
     }
