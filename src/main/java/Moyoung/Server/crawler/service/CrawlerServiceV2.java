@@ -245,6 +245,114 @@ public class CrawlerServiceV2 {
         }
     }
 
+    // 상영시간 당일 누락분 크롤링 메서드
+    @Scheduled(cron = "0 10 0 * * *") // 매일 0시 10분 0초 실행
+    public void reCrawlTodayRunningTime() throws IOException {
+        List<Cinema> cinemaList = cinemaRepository.findAll();
+
+        // 현재 날짜 가져오기
+        LocalDate playDate = LocalDate.now();
+
+        // 날짜 포맷 지정 (yyyyMMdd 형식으로)
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String playDateStr = playDate.format(formatter);
+
+        for (Cinema cinema : cinemaList ) {
+            CloseableHttpClient httpClient = HttpClients.createDefault();
+
+            // URL 설정
+            String url = "https://www.kobis.or.kr/kobis/business/mast/thea/findSchedule.do";
+
+            // POST 요청 생성
+            HttpPost httpPost = new HttpPost(url);
+            String cinemaNo = cinema.getCode();
+
+            // 쿼리 파람 추가
+            List<NameValuePair> params = new ArrayList<>();
+            params.add(new BasicNameValuePair("theaCd", cinemaNo));
+            params.add(new BasicNameValuePair("showDt", playDateStr));
+
+            // POST 요청 엔티티에 설정
+            httpPost.setEntity(new UrlEncodedFormEntity(params));
+
+            // 요청 보내기
+            CloseableHttpResponse response = httpClient.execute(httpPost);
+
+            // 응답 받기
+            org.apache.http.HttpEntity responseEntity = response.getEntity();
+            String responseString = EntityUtils.toString(responseEntity);
+
+            // Gson을 사용하여 JSON 파싱
+            Gson gson = new Gson();
+            TheaterSchedule theaterSchedule;
+            try {
+                theaterSchedule = gson.fromJson(responseString, TheaterSchedule.class);
+            } catch (Exception e) {
+                log.error("Json Cinema:{}", cinema.getCinemaId());
+                continue;
+            }
+
+            // RunningTime에 필요한 정보 추출
+            List<TheaterSchedule.MovieSchedule> schedules = theaterSchedule.getSchedule();
+            for (TheaterSchedule.MovieSchedule schedule : schedules) {
+                String scrnNm = schedule.getScrnNm();
+                String movieNm = schedule.getMovieNm();
+                String showTm = schedule.getShowTm();
+                String movieCd = schedule.getMovieCd();
+
+                String[] showTmArr = showTm.split(",");
+
+                for (String startTm : showTmArr) {
+                    RunningTime runningTime = new RunningTime();
+
+                    int startHour = Integer.parseInt(startTm.substring(0, 2));
+                    int startMinute = Integer.parseInt(startTm.substring(3));
+
+                    LocalTime startTime;
+
+                    if (startHour >= 24) {
+                        int tomorrowStartHour = startHour - 24;
+                        startTime = LocalTime.of(tomorrowStartHour, startMinute);
+                    } else {
+                        startTime = LocalTime.of(startHour, startMinute);
+                    }
+
+                    runningTime.setStartTime(LocalDateTime.of(playDate, startTime));
+                    runningTime.setCinema(cinema);
+                    runningTime.setScreenInfo(scrnNm);
+
+                    if (!runningTimeRepository.findRunningTimeCinemaAndStartTimeAndScreenInfo(cinema, runningTime.getStartTime(), scrnNm).isPresent()) {
+                        Movie movie = new Movie();
+                        Optional<Movie> optionalMovie = movieRepository.findByName(movieNm);
+                        if (optionalMovie.isPresent()) {
+                            movie = optionalMovie.get();
+
+                            // 영화 객체에 빠진 부분이 없으면 다시 크롤링
+                            // 다시 크롤링 해도 없는 경우가 있으므로 금일 크롤링을 진행 했다면 더이상 안하게 함
+                            movie = reCrawlMovieInfo(playDate, httpClient, gson, movieNm, movieCd, movie);
+                        } else {
+                            movie = crawlMovieInfo(httpClient, gson, movieNm, movieCd, movie);
+
+                        }
+                        movie.setLastAddedAt(playDate);
+                        movie = movieRepository.save(movie);
+                        runningTime.setMovie(movie);
+                        showTm = movie.getShowTm();
+                        try {
+                            if (showTm != null && !showTm.isEmpty()) {
+                                runningTime.setEndTime(runningTime.getStartTime().plusMinutes(Long.parseLong(showTm) + 10L));
+                            }
+                        } catch (NumberFormatException e) {
+                            log.error("Cinema: {} Movie: {}", cinema.getName(), movie.getName());
+                        }
+                        runningTimeRepository.save(runningTime);
+                    }
+                }
+            }
+        }
+    }
+
+
     private Movie reCrawlMovieInfo(LocalDate playDate, CloseableHttpClient httpClient, Gson gson, String movieNm, String movieCd, Movie movie) throws IOException {
         if (!movie.getLastAddedAt().equals(playDate)) {
             log.info("MovieReload: {}", movie.getName());
