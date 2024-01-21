@@ -8,11 +8,13 @@ import Moyoung.Server.auth.jwt.JwtTokenizer;
 import Moyoung.Server.auth.jwt.TokenService;
 import Moyoung.Server.auth.utils.CustomAuthorityUtils;
 import Moyoung.Server.auth.utils.JwtUtils;
+import Moyoung.Server.auth.utils.StringToLocalDateConverter;
 import Moyoung.Server.member.service.MemberService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.format.FormatterRegistry;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -127,6 +129,12 @@ public class SecurityConfiguration implements WebMvcConfigurer {
                     .addFilter(jwtAuthenticationFilter)
                     .addFilterAfter(jwtVerificationFilter, JwtAuthenticationFilter.class);
         }
+    }
+
+    @Override
+    public void addFormatters(FormatterRegistry registry) {
+        registry.addFormatter(new StringToLocalDateConverter("yyyy-MM-dd"));
+        registry.addFormatter(new StringToLocalDateConverter("yyyy-M-d"));
     }
 
     @Bean
