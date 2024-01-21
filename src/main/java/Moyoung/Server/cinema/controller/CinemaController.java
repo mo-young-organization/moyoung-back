@@ -31,7 +31,7 @@ public class CinemaController {
                                         @RequestParam(required = false) boolean lotte,
                                         @RequestParam(required = false) boolean cgv,
                                         @RequestParam long movieId,
-                                        @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
+                                        @RequestParam @DateTimeFormat LocalDate date) {
         Movie movie = movieService.findMovie(movieId);
         List<CinemaPlus> cinemaPlusList = cinemaService
                 .find(x, y, distance, mega, lotte, cgv, movie, date);
