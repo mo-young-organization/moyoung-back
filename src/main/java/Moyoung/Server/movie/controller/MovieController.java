@@ -39,7 +39,7 @@ public class MovieController {
         }
 
         List<Cinema> cinemaList = cinemaService.findCinemaList(x, y, distance);
-        Map<String, List<RunningTime>> moviesMap = runningTimeService.findDistinctedRunningTimeWithMovies(cinemaList,URLDecoder.decode(movieName, StandardCharsets.UTF_8));
+        Map<String, List<RunningTime>> moviesMap = runningTimeService.findDistinctRunningTimeWithMovies(cinemaList,URLDecoder.decode(movieName, StandardCharsets.UTF_8));
 
         return new ResponseEntity<>(movieMapper.moviesToResponses(moviesMap), HttpStatus.OK);
     }

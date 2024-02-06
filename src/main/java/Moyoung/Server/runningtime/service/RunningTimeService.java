@@ -36,7 +36,7 @@ public class RunningTimeService {
         return runningTime;
     }
 
-    public Map<String, List<RunningTime>> findDistinctedRunningTimeWithMovies(List<Cinema> cinemaList, String movieName) {
+    public Map<String, List<RunningTime>> findDistinctRunningTimeWithMovies(List<Cinema> cinemaList, String movieName) {
         LocalDate date = LocalDate.now();
         LocalDateTime startOfDate = date.atStartOfDay();
         LocalDateTime endOfDate = date.atTime(23, 59, 59);
