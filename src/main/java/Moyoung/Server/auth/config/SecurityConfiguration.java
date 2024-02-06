@@ -17,9 +17,11 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -55,40 +57,31 @@ public class SecurityConfiguration implements WebMvcConfigurer {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .headers().frameOptions().sameOrigin()
-                .and()
-
-                .cors()
-                .configurationSource(corsConfigurationSource())
-
-                .and()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-
-                .and()
-                .csrf().disable()
-                .formLogin().disable()
-                .httpBasic().disable()
-
-                .exceptionHandling()
-                .authenticationEntryPoint(new MemberAuthenticationEntryPoint())
-                .accessDeniedHandler(new MemberAccessDeniedHandler())
-
-                .and()
-                .apply(new CustomFilterConfigurer())
-
-                .and()
-                .logout().logoutRequestMatcher(new AntPathRequestMatcher("/logout")).permitAll()
-                .logoutSuccessUrl("/")
-
-                .and()
+                .headers(headers -> headers
+                        .frameOptions(frameOptions -> frameOptions
+                                .sameOrigin()))
+                .cors(corsConfigurer -> corsConfigurer
+                        .configurationSource(corsConfigurationSource()))
+                .sessionManagement(sessionManagement -> sessionManagement
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                )
+                .csrf(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
+                .httpBasic(AbstractHttpConfigurer::disable)
+                .exceptionHandling(authenticationManager -> authenticationManager
+                        .authenticationEntryPoint(new MemberAuthenticationEntryPoint())
+                        .accessDeniedHandler(new MemberAccessDeniedHandler()))
+                .logout(logout -> logout
+                        .logoutRequestMatcher(new AntPathRequestMatcher("/logout")).permitAll()
+                        .logoutSuccessUrl("/"))
                 .authorizeRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/manual/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().permitAll()
                 )
-                .oauth2Login()
-                .successHandler(new OAuth2MemberSuccessHandler(memberService, tokenService, callbackUrl));
+                .oauth2Login(oauth2 ->
+                        oauth2.successHandler(new OAuth2MemberSuccessHandler(memberService, tokenService, callbackUrl)))
+                .apply(new CustomFilterConfigurer());
 
         return http.build();
     }
