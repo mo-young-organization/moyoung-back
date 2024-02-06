@@ -60,7 +60,7 @@ public class MovieControllerTest implements MovieControllerHelper {
 
         given(cinemaService.findCinemaList(Mockito.anyDouble(), Mockito.anyDouble(), Mockito.anyDouble())).willReturn(StubData.getCinemaList());
 
-        given(runningTimeService.findDistinctedRunningTimeWithMovies(Mockito.anyList(), Mockito.anyString())).willReturn(StubData.getDistinctedRunningTimeWithMovies());
+        given(runningTimeService.findDistinctRunningTimeWithMovies(Mockito.anyList(), Mockito.anyString())).willReturn(StubData.getDistinctedRunningTimeWithMovies());
 
         given(movieMapper.moviesToResponses(Mockito.anyMap())).willReturn(StubData.getMovieResponses());
 

@@ -13,9 +13,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,7 +36,7 @@ public class RunningTimeService {
         return runningTime;
     }
 
-    public Map<String, List<RunningTime>> findDistinctedRunningTimeWithMovies(List<Cinema> cinemaList, String movieName) {
+    public Map<String, List<RunningTime>> findDistinctRunningTimeWithMovies(List<Cinema> cinemaList, String movieName) {
         LocalDate date = LocalDate.now();
         LocalDateTime startOfDate = date.atStartOfDay();
         LocalDateTime endOfDate = date.atTime(23, 59, 59);
@@ -49,15 +47,14 @@ public class RunningTimeService {
                 .collect(Collectors.toList());
 
         // 중복된 CinemaId와 MovieId를 기준으로 중복을 제거
-        List<RunningTime> distinctRunningTimes = allRunningTimes.stream()
-                .collect(Collectors.toMap(
-                        runningTime -> runningTime.getCinema().getCinemaId() + "-" + runningTime.getMovie().getMovieId(),
-                        runningTime -> runningTime,
-                        (existing, replacement) -> existing)
-                )
-                .values()
-                .stream()
-                .collect(Collectors.toList());
+        Set<String> uniqueIds = new HashSet<>();
+        List<RunningTime> distinctRunningTimes = new ArrayList<>();
+        for (RunningTime runningTime : allRunningTimes) {
+            String uniqueId = runningTime.getCinema().getCinemaId() + "-" + runningTime.getMovie().getMovieId();
+            if (uniqueIds.add(uniqueId)) {
+                distinctRunningTimes.add(runningTime);
+            }
+        }
 
         // 중복된 RunningTime을 영화 이름을 기준으로 그룹화
         Map<String, List<RunningTime>> distinctRunningTimesMap = distinctRunningTimes.stream()
