@@ -432,18 +432,18 @@ public class CrawlerServiceV2 {
         String responseBody = EntityUtils.toString(response.getEntity(), "UTF-8");
         Document doc = Jsoup.parse(responseBody);
 
-        Element aElement = doc.select("a.fl.thumb").first();
+        Element imgElement = doc.select("a.fl.thumb img").first();
 
-        String hrefValue = null;
-        if (aElement != null) {
-            // "href" 속성의 값을 가져옴
-            hrefValue = aElement.attr("href");
-            log.info("href 값: " + hrefValue);
+        String srcValue = null;
+        if (imgElement != null) {
+            // "src" 속성의 값을 가져옴
+            srcValue = imgElement.attr("src");
+            log.info("src 값: " + srcValue);
         } else {
-            log.error("class 'fl thumb'를 가진 <a> 요소를 찾을 수 없습니다.");
+            log.error("class 'fl thumb'를 가진 <a> 요소 내의 <img> 태그를 찾을 수 없습니다.");
         }
 
-        movie.setThumbnailUrl(IMAGE_URL + hrefValue);
+        movie.setThumbnailUrl(IMAGE_URL + srcValue);
 
         Element pElement = doc.select("p.desc_info").first();
         String pElementText = null;
