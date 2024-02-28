@@ -1,426 +1,495 @@
-//package Moyoung.Server.crawler.service;
-//
-//import Moyoung.Server.cinema.entity.Cinema;
-//import Moyoung.Server.cinema.repository.CinemaRepository;
-//import Moyoung.Server.crawler.response.InfoResponse;
-//import Moyoung.Server.crawler.response.LotteResponse;
-//import Moyoung.Server.crawler.response.MegaResponse;
-//import Moyoung.Server.crawler.response.RankResponse;
-//import Moyoung.Server.movie.entity.Movie;
-//import Moyoung.Server.movie.entity.MovieRank;
-//import Moyoung.Server.movie.repository.MovieRankRepository;
-//import Moyoung.Server.movie.repository.MovieRepository;
-//import Moyoung.Server.runningtime.entity.RunningTime;
-//import Moyoung.Server.runningtime.repository.RunningTimeRepository;
-//import com.google.gson.Gson;
-//import lombok.RequiredArgsConstructor;
-//import org.apache.http.HttpEntity;
-//import org.apache.http.NameValuePair;
-//import org.apache.http.client.entity.UrlEncodedFormEntity;
-//import org.apache.http.client.methods.CloseableHttpResponse;
-//import org.apache.http.client.methods.HttpGet;
-//import org.apache.http.client.methods.HttpPost;
-//import org.apache.http.entity.StringEntity;
-//import org.apache.http.impl.client.CloseableHttpClient;
-//import org.apache.http.impl.client.HttpClients;
-//import org.apache.http.message.BasicNameValuePair;
-//import org.apache.http.util.EntityUtils;
-//import org.jsoup.Jsoup;
-//import org.jsoup.nodes.Document;
-//import org.jsoup.nodes.Element;
-//import org.springframework.beans.factory.annotation.Value;
-//import org.springframework.scheduling.annotation.Scheduled;
-//import org.springframework.stereotype.Service;
-//import org.springframework.web.util.UriComponentsBuilder;
-//
-//import java.io.IOException;
-//import java.time.LocalDate;
-//import java.time.LocalDateTime;
-//import java.time.LocalTime;
-//import java.time.format.DateTimeFormatter;
-//import java.time.temporal.ChronoUnit;
-//import java.util.ArrayList;
-//import java.util.List;
-//import java.util.Optional;
-//
-//@Service
-//@RequiredArgsConstructor
-//public class CrawlerService {
-//
-//    @Value("${crawler.key}")
-//    private String KEY;
-//
-//    private final CinemaRepository cinemaRepository;
-//    private final MovieRepository movieRepository;
-//    private final MovieRankRepository movieRankRepository;
-//    private final RunningTimeRepository runningTimeRepository;
-//
-//    public void crawlMegaBox() throws IOException {
-//        try {
-//            List<Cinema> megaCinemaList = cinemaRepository.findAllByBrand("Mega");
-//
-//            // 현재 날짜 가져오기
-//            LocalDate currentDate = LocalDate.now();
-//
-//            // 현재 날짜에서 5일을 더한 날짜 계산
-//            LocalDate playDate = currentDate.plus(5, ChronoUnit.DAYS);
-//
-//            // 날짜 포맷 지정 (yyyyMMdd 형식으로)
-//            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
-//            String playDateStr = playDate.format(formatter);
-//
-//            for (Cinema cinema : megaCinemaList) {
-//                CloseableHttpClient httpClient = HttpClients.createDefault();
-//
-//                // URL 설정
-//                String url = "https://www.megabox.co.kr/on/oh/ohc/Brch/schedulePage.do";
-//
-//                // POST 요청 생성
-//                HttpPost httpPost = new HttpPost(url);
-//                String cinemaNo = cinema.getCode();
-//
-//                String requestBody = "{\n" +
-//                        "    \"masterType\": \"brch\",\n" +
-//                        "    \"detailType\": \"area\",\n" +
-//                        "    \"brchNo\": \"" + cinemaNo + "\",\n" +
-//                        "    \"brchNo1\": \"" + cinemaNo + "\",\n" +
-//                        "    \"firstAt\": \"Y\",\n" +
-//                        "    \"playDe\": \"" + playDateStr + "\"\n" +
-//                        "}";
-//
-//                StringEntity entity = new StringEntity(requestBody);
-//                httpPost.setEntity(entity);
-//
-//                // 요청 헤더 설정
-//                httpPost.setHeader("Content-Type", "application/json");
-//                httpPost.setHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36");
-//
-//                // 요청 보내기
-//                CloseableHttpResponse response = httpClient.execute(httpPost);
-//
-//                // 응답 받기
-//                HttpEntity responseEntity = response.getEntity();
-//                String responseString = EntityUtils.toString(responseEntity);
-//
-//                // Gson을 사용하여 JSON 파싱
-//                Gson gson = new Gson();
-//                MegaResponse jsonResponse = gson.fromJson(responseString, MegaResponse.class);
-//
-//                // 위도 경도 주소 설정
-//                if (cinema.getX() == 0 && cinema.getY() == 0) {
-//                    MegaResponse.BrchInfo brchInfo =  jsonResponse.getMegaMap().getBrchInfo();
-//                    cinema.setX(brchInfo.getBrchLat());
-//                    cinema.setY(brchInfo.getBrchLon());
-//                    String address = brchInfo.getAddress();
-//
-//                    // 괄호 대체
-//                    address = address.replace("&#40;", "(");
-//                    address = address.replace("&#41;", ")");
-//
-//                    cinema.setAddress(address);
-//
-//                    cinemaRepository.save(cinema);
-//                }
-//
-//                // RunningTime 객체 생성 및 저장
-//                for (MegaResponse.MovieForm movieForm : jsonResponse.getMegaMap().getMovieFormList()) {
-//                    RunningTime runningTime = new RunningTime();
-//
-//                    String screenId = movieForm.getScreenId();
-//
-//                    // 괄호 대체
-//                    screenId = screenId.replace("&#40;", "(");
-//                    screenId = screenId.replace("&#41;", ")");
-//
-//                    runningTime.setScreenInfo(screenId);
-//
-//                    // 조조 여부
-//                    if (movieForm.getPlayTyCdNm().equals("조조")) {
-//                        runningTime.setEarlyMorning(true);
-//                    }
-//
-//                    String startTimeStr = movieForm.getPlayStartTime();
-//                    String endTimeStr = movieForm.getPlayEndTime();
-//                    LocalDate playStartDate = playDate;
-//                    LocalDate playEndDate = playDate;
-//
-//                    int startHour = Integer.parseInt(startTimeStr.substring(0, 2));
-//                    int startMinute = Integer.parseInt(startTimeStr.substring(3, 5));
-//
-//                    int endHour = Integer.parseInt(endTimeStr.substring(0, 2));
-//                    int endMinute = Integer.parseInt(endTimeStr.substring(3, 5));
-//
-//                    if (startHour >= 24) {
-//                        playStartDate = playStartDate.plusDays(1);
-//                        startHour -= 24; // 24를 빼줌
-//                    }
-//                    if (endHour >= 24) {
-//                        playEndDate = playEndDate.plusDays(1);
-//                        endHour -= 24; // 24를 빼줌
-//                    }
-//
-//                    LocalTime startTime = LocalTime.of(startHour, startMinute);
-//                    LocalTime endTime = LocalTime.of(endHour, endMinute);
-//
-//                    runningTime.setStartTime(LocalDateTime.of(playStartDate, startTime));
-//                    runningTime.setEndTime(LocalDateTime.of(playEndDate, endTime));
-//
-//                    runningTime.setCinema(cinema);
-//                    String movieName = movieForm.getMovieNm();
-//
-//                    // 괄호 대체
-//                    movieName = movieName.replace("&#40;", "(");
-//                    movieName = movieName.replace("&#41;", ")");
-//
-//                    // 대괄호 및 대괄호 내용 삭제
-//                    movieName = movieName.replaceAll("\\[.*?\\]", "");
-//                    movieName = movieName.trim();
-//
-//                    Optional<Movie> optionalMovie = movieRepository.findByName(movieName);
-//                    Movie movie;
-//                    if (optionalMovie.isPresent()) {
-//                        movie = optionalMovie.get();
-//
-//                        // 상영 날짜 갱신
-//                        if (movie.getLastAddedAt() == null || !movie.getLastAddedAt().equals(playDate)) {
-//                            movie.setLastAddedAt(playDate);
-//                            movieRepository.save(movie);
-//                        }
-//
-//                    } else {
-//                        movie = new Movie();
-//                        movie.setName(movieName);
-//                        movie.setLastAddedAt(playDate);
-//
-//                        // 관람 등급 설정
-//                        movie.setMovieRating(movieForm.getAdmisClassCdNm());
-//
-//                        String rpstMovieNo = movieForm.getRpstMovieNo();
-//                        String movieInfoUrl = "https://www.megabox.co.kr/movie-detail?rpstMovieNo=" + rpstMovieNo;
-//
-//                        try {
-//                            // Jsoup을 사용하여 웹 페이지를 가져옴
-//                            Document doc = Jsoup.connect(movieInfoUrl).get();
-//
-//                            // 포스터 이미지를 포함하는 HTML 요소를 선택
-//                            Element posterElement = doc.selectFirst("#contents > div.movie-detail-page > div.movie-detail-cont > div.poster > div > img");
-//
-//                            if (posterElement != null) {
-//                                // 포스터 이미지의 src 속성을 가져옴
-//                                String posterImageUrl = posterElement.attr("src");
-//                                movie.setThumbnailUrl(posterImageUrl);
-//                            } else {
-//                                System.out.println("포스터 이미지를 찾을 수 없습니다.");
-//                            }
-//
-//                            // 영화 정보 텍스트를 가져옴
-//                            Element descriptionMeta = doc.select("meta[property=description]").first();
-//
-//                            if (descriptionMeta != null) {
-//                                String description = descriptionMeta.attr("content");
-//                                movie.setInfo(description);
-//                            } else {
-//                                System.out.println("영화 정보를 찾을 수 없습니다.");
-//                            }
-//
-//                            // 검색을 위한 영화이름 전처리
-//                            if (movieName.startsWith("(") || movieName.startsWith("[")) {
-//                                int endIndex = -1;
-//                                if (movieName.indexOf(")") >= 0) {
-//                                    endIndex = movieName.indexOf(")");
-//                                } else if (movieName.indexOf("]") >= 0) {
-//                                    endIndex = movieName.indexOf("]");
-//                                }
-//
-//                                // 괄호 또는 대괄호 다음의 빈 칸 제거
-//                                if (endIndex >= 0) {
-//                                    movieName = movieName.substring(endIndex + 1).trim();
-//                                }
-//                            }
-//
-//                            String movieInfoUrl2 = UriComponentsBuilder.fromUriString("http://www.kobis.or.kr/kobisopenapi/webservice/rest/movie/searchMovieList.json")
-//                                    .queryParam("key", KEY)
-//                                    .queryParam("curPage", 1)
-//                                    .queryParam("itemPerPage", 1)
-//                                    .queryParam("movieNm", movieName).build().toString();
-//
-//                            HttpGet httpGet = new HttpGet(movieInfoUrl2);
-//
-//                            // 요청 보내기
-//                            response = httpClient.execute(httpGet);
-//
-//                            // 응답 받기
-//                            responseEntity = response.getEntity();
-//                            responseString = EntityUtils.toString(responseEntity);
-//
-//                            InfoResponse infoResponse = gson.fromJson(responseString, InfoResponse.class);
-//
-//                            if (infoResponse != null) {
-//                                InfoResponse.MovieInfo movieInfo = infoResponse.getMovieListResult().getMovieList()[0];
-//
-//                                movie.setGenre(movieInfo.getGenre());
-//                                movie.setReleaseDate(movieInfo.getReleaseDate());
-//                            }
-//
-//                        } catch (Exception e) {
-//                            e.printStackTrace();
-//                        }
-//
-//                        movieRepository.save(movie);
-//                    }
-//                    runningTime.setMovie(movie);
-//
-//                    runningTimeRepository.save(runningTime);
-//                }
-//
-//                // 클라이언트 종료
-//                httpClient.close();
-//            }
-//
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    public void crawlLotteCinema() {
-//        try {
-//            List<Cinema> megaCinemaList = cinemaRepository.findAllByBrand("Lotte");
-//            LocalDate currentDate = LocalDate.now();
-//            LocalDate playDate = currentDate.plus(4, ChronoUnit.DAYS);
-//            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-//            String playDateStr = playDate.format(formatter);
-//
-//            for (Cinema cinema : megaCinemaList) {
-//                System.out.println(cinema.getCinemaId());
-//                String region = cinema.getRegion_1();
-//                String regionNo = getRegionNumber(region);
-//                String cinemaNo = cinema.getCode();
-//
-//                try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
-//                    String uri = "https://www.lottecinema.co.kr/LCWS/Ticketing/TicketingData.aspx";
-//                    HttpPost httpPost = new HttpPost(uri);
-//
-//                    List<NameValuePair> params = new ArrayList<>();
-//                    String paramList = createParamList(playDateStr, regionNo, cinemaNo);
-//                    params.add(new BasicNameValuePair("paramList", paramList));
-//                    httpPost.setEntity(new UrlEncodedFormEntity(params));
-//
-//                    try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
-//                        HttpEntity responseEntity = response.getEntity();
-//                        String responseString = EntityUtils.toString(responseEntity);
-//
-//                        Gson gson = new Gson();
-//                        LotteResponse lotteResponse = gson.fromJson(responseString, LotteResponse.class);
-//
-//                        if (lotteResponse.getPlaySeqsHeader() != null) {
-//                            List<LotteResponse.MovieForm> movieFormList = lotteResponse.getPlaySeqsHeader().getMovieFormList();
-//
-//                            if (movieFormList != null) {
-//                                for (LotteResponse.MovieForm movieForm : movieFormList) {
-//                                    if (movieForm == null) {
-//                                        continue;
-//                                    }
-//                                    RunningTime runningTime = new RunningTime();
-//                                    String startTimeStr = movieForm.getStartTime();
-//                                    String endTimeStr = movieForm.getEndTime();
-//                                    if (startTimeStr != null) {
-//                                        LocalDate playStartDate = playDate;
-//                                        LocalDate playEndDate = playDate;
-//
-//                                        int startHour = Integer.parseInt(startTimeStr.substring(0, 2));
-//                                        int startMinute = Integer.parseInt(startTimeStr.substring(3, 5));
-//
-//                                        int endHour = Integer.parseInt(endTimeStr.substring(0, 2));
-//                                        int endMinute = Integer.parseInt(endTimeStr.substring(3, 5));
-//
-//                                        if (startHour >= 24) {
-//                                            playStartDate = playStartDate.plusDays(1);
-//                                            startHour -= 24; // 24를 빼줌
-//                                        }
-//                                        if (endHour >= 24) {
-//                                            playEndDate = playEndDate.plusDays(1);
-//                                            endHour -= 24; // 24를 빼줌
-//                                        }
-//
-//                                        LocalTime startTime = LocalTime.of(startHour, startMinute);
-//                                        LocalTime endTime = LocalTime.of(endHour, endMinute);
-//
-//                                        runningTime.setStartTime(LocalDateTime.of(playStartDate, startTime));
-//                                        runningTime.setEndTime(LocalDateTime.of(playEndDate, endTime));
-//                                    }
-//                                    String screenInfo = movieForm.getScreenId();
-//                                    String brandNm = movieForm.getBrandNm();
-//                                    if (brandNm != null && brandNm.equals("샤롯데")) {
-//                                        screenInfo = brandNm;
-//                                    } else if (screenInfo != null) {
-//                                        System.out.println(screenInfo);
-//                                        screenInfo = screenInfo.substring(4) + "관";
-//                                        if (screenInfo.charAt(0) == '0') {
-//                                            System.out.println(screenInfo);
-//                                            screenInfo = screenInfo.substring(1);
-//                                        }
-//                                    }
-//
-//                                    runningTime.setScreenInfo(screenInfo);
-//
-//                                    String movieName = movieForm.getMovieNameKR();
-//                                    Movie movie = getOrCreateMovie(movieName);
-//                                    runningTime.setMovie(movie);
-//
-//                                    runningTimeRepository.save(runningTime);
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    private String getRegionNumber(String region) {
-//        switch (region) {
-//            case "서울":
-//                return "1";
-//            case "경기/인천":
-//                return "2";
-//            case "충청/대전":
-//                return "3";
-//            case "전라/광주":
-//                return "4";
-//            case "경북/대구":
-//                return "5";
-//            case "경남/부산/울산":
-//                return "101";
-//            case "강원":
-//                return "6";
-//            case "제주":
-//                return "7";
-//            default:
-//                return null;
-//        }
-//    }
-//
-//    private String createParamList(String playDateStr, String regionNo, String cinemaNo) {
-//        return "{\n" +
-//                "    \"MethodName\": \"GetPlaySequence\",\n" +
-//                "    \"channelType\": \"HO\",\n" +
-//                "    \"osType\": \"W\",\n" +
-//                "    \"osVersion\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36\",\n" +
-//                "    \"playDate\": \"" + playDateStr + "\",\n" +
-//                "    \"cinemaID\": \"1|" + regionNo + "|" + cinemaNo + "\",\n" +
-//                "    \"representationMovieCode\": \"\"\n" +
-//                "}";
-//    }
-//
-//    private Movie getOrCreateMovie(String movieName) {
-//        Optional<Movie> optionalMovie = movieRepository.findByName(movieName);
-//        return optionalMovie.orElseGet(() -> {
-//            Movie movie = new Movie();
-//            movie.setName(movieName);
-//            return movieRepository.save(movie);
-//        });
-//    }
-//}
+package Moyoung.Server.crawler.service;
+
+import Moyoung.Server.cinema.entity.Cinema;
+import Moyoung.Server.cinema.repository.CinemaRepository;
+import Moyoung.Server.crawler.response.MovieInfoResultResponse;
+import Moyoung.Server.crawler.response.RankResponse;
+import Moyoung.Server.crawler.response.TheaterSchedule;
+import Moyoung.Server.movie.entity.Movie;
+import Moyoung.Server.movie.entity.MovieRank;
+import Moyoung.Server.movie.repository.MovieRankRepository;
+import Moyoung.Server.movie.repository.MovieRepository;
+import Moyoung.Server.runningtime.entity.RunningTime;
+import Moyoung.Server.runningtime.repository.RunningTimeRepository;
+import com.google.gson.Gson;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.apache.http.util.EntityUtils;
+import org.jetbrains.annotations.NotNull;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponents;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class CrawlerService {
+
+    private final CinemaRepository cinemaRepository;
+    private final MovieRepository movieRepository;
+    private final RunningTimeRepository runningTimeRepository;
+    private final MovieRankRepository movieRankRepository;
+
+
+    @Value("${crawler.key}")
+    private String KEY;
+
+    @Value("${crawler.kakao.key}")
+    private String KAKAOKEY;
+
+    @Value("${crawler.image}")
+    private String IMAGE_URL;
+
+    // 영화 순위 크롤링 메서드 (1위 부터 10위까지)
+    // 0시 0분 5초에 받아오려 했으나 데이터 갱신되려면 시간이 조금 필요한 듯 하다
+    @Scheduled(cron = "0 0 12 * * *") // 매일 12시 0분 0초 실행
+    public void crawlMovieRank() throws IOException {
+        // 당일 날짜는 정보가 없기 때문에 전일로 진행
+        LocalDate date = LocalDate.now().minusDays(1);
+
+        // 날짜 포맷 지정 (yyyyMMdd 형식으로)
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String dateStr = date.format(formatter);
+
+        try {
+            CloseableHttpClient httpClient = HttpClients.createDefault();
+
+
+
+            String url = UriComponentsBuilder.fromUriString("http://www.kobis.or.kr/kobisopenapi/webservice/rest/boxoffice/searchDailyBoxOfficeList.json")
+                    .queryParam("key", KEY)
+                    .queryParam("targetDt", dateStr)
+                    .queryParam("itemPerPage", 10).build().toString();
+
+            // Get 요청 생성
+            HttpGet httpGet = new HttpGet(url);
+
+            // 요청 보내기
+            CloseableHttpResponse response = httpClient.execute(httpGet);
+
+            // 응답 받기
+            org.apache.http.HttpEntity responseEntity = response.getEntity();
+            String responseString = EntityUtils.toString(responseEntity);
+
+            // Gson을 사용하여 JSON 파싱
+            Gson gson = new Gson();
+            RankResponse jsonResponse = gson.fromJson(responseString, RankResponse.class);
+
+            if (jsonResponse != null) {
+                RankResponse.DailyBoxOffice[] dailyBoxOffices = jsonResponse.getBoxOfficeResult().getDailyBoxOfficeList();
+
+                for (int i = 0; i < dailyBoxOffices.length; i++) {
+                    MovieRank movieRank = new MovieRank();
+                    movieRank.setDate(date);
+                    movieRank.setMovieRank(i + 1);
+
+                    RankResponse.DailyBoxOffice dailyBoxOffice = dailyBoxOffices[i];
+                    String movieNm = dailyBoxOffice.getMovieNm();
+
+                    Movie movie = new Movie();
+
+                    try {
+                        movie = movieRepository.findAllByNameContains(movieNm).get(0);
+                    } catch (IndexOutOfBoundsException e) { // 영화 정보가 없을 경우
+                        movie = crawlMovieInfo(httpClient, gson, movieNm, dailyBoxOffice.getMovieCd(), movie);
+                        movie = movieRepository.save(movie);
+                    }
+
+                    movieRank.setMovie(movie);
+
+                    movieRankRepository.save(movieRank);
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // 영화 상영시간 크롤링 메서드
+    @Scheduled(cron = "5 0 0 * * *") // 매일 0시 5분 0초 실행
+    public void crawlRunningTime() throws IOException {
+        List<Cinema> cinemaList = cinemaRepository.findAll();
+
+        // 현재 날짜 가져오기
+        LocalDate currentDate = LocalDate.now();
+
+        // 현재 날짜에서 5일을 더한 날짜 계산
+        LocalDate playDate = currentDate.plus(5, ChronoUnit.DAYS);
+
+        // 날짜 포맷 지정 (yyyyMMdd 형식으로)
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String playDateStr = playDate.format(formatter);
+
+        for (Cinema cinema : cinemaList ) {
+            CloseableHttpClient httpClient = HttpClients.createDefault();
+
+            // URL 설정
+            String url = "https://www.kobis.or.kr/kobis/business/mast/thea/findSchedule.do";
+
+            // POST 요청 생성
+            HttpPost httpPost = new HttpPost(url);
+            String cinemaNo = cinema.getCode();
+
+            // 쿼리 파람 추가
+            List<NameValuePair> params = new ArrayList<>();
+            params.add(new BasicNameValuePair("theaCd", cinemaNo));
+            params.add(new BasicNameValuePair("showDt", playDateStr));
+
+            // POST 요청 엔티티에 설정
+            httpPost.setEntity(new UrlEncodedFormEntity(params));
+
+            // 요청 보내기
+            CloseableHttpResponse response = httpClient.execute(httpPost);
+
+            // 응답 받기
+            org.apache.http.HttpEntity responseEntity = response.getEntity();
+            String responseString = EntityUtils.toString(responseEntity);
+
+            // Gson을 사용하여 JSON 파싱
+            Gson gson = new Gson();
+            TheaterSchedule theaterSchedule;
+            try {
+                theaterSchedule = gson.fromJson(responseString, TheaterSchedule.class);
+            } catch (Exception e) {
+                log.error("Json Cinema:{}", cinema.getCinemaId());
+                continue;
+            }
+
+            // RunningTime에 필요한 정보 추출
+            List<TheaterSchedule.MovieSchedule> schedules = theaterSchedule.getSchedule();
+            for (TheaterSchedule.MovieSchedule schedule : schedules) {
+                String scrnNm = schedule.getScrnNm();
+                String movieNm = schedule.getMovieNm();
+                String showTm = schedule.getShowTm();
+                String movieCd = schedule.getMovieCd();
+
+                String[] showTmArr = showTm.split(",");
+
+                for (String startTm : showTmArr) {
+                    RunningTime runningTime = new RunningTime();
+
+                    int startHour = Integer.parseInt(startTm.substring(0, 2));
+                    int startMinute = Integer.parseInt(startTm.substring(3));
+
+                    LocalTime startTime;
+
+                    if (startHour >= 24) {
+                        int tomorrowStartHour = startHour - 24;
+                        startTime = LocalTime.of(tomorrowStartHour, startMinute);
+                    } else {
+                        startTime = LocalTime.of(startHour, startMinute);
+                    }
+
+                    runningTime.setStartTime(LocalDateTime.of(playDate, startTime));
+                    runningTime.setCinema(cinema);
+                    runningTime.setScreenInfo(scrnNm);
+
+
+                    Movie movie = new Movie();
+                    Optional<Movie> optionalMovie = movieRepository.findByName(movieNm);
+                    if (optionalMovie.isPresent()) {
+                        movie = optionalMovie.get();
+
+                        // 영화 객체에 빠진 부분이 없으면 다시 크롤링
+                        // 다시 크롤링 해도 없는 경우가 있으므로 금일 크롤링을 진행 했다면 더이상 안하게 함
+                        movie = reCrawlMovieInfo(playDate, httpClient, gson, movieNm, movieCd, movie);
+                    } else {
+                        movie = crawlMovieInfo(httpClient, gson, movieNm, movieCd, movie);
+
+                    }
+                    movie.setLastAddedAt(playDate);
+                    movie = movieRepository.save(movie);
+                    runningTime.setMovie(movie);
+                    showTm = movie.getShowTm();
+                    try {
+                        if (showTm != null && !showTm.isEmpty()) {
+                            runningTime.setEndTime(runningTime.getStartTime().plusMinutes(Long.parseLong(showTm) + 10L));
+                        }
+                    } catch (NumberFormatException e) {
+                        log.error("Cinema: {} Movie: {}", cinema.getName(), movie.getName());
+                    }
+                    runningTimeRepository.save(runningTime);
+                }
+            }
+        }
+    }
+
+    // 상영시간 당일 누락분 크롤링 메서드
+    @Scheduled(cron = "0 10 0 * * *") // 매일 0시 10분 0초 실행
+    public void reCrawlTodayRunningTime() throws IOException {
+        List<Cinema> cinemaList = cinemaRepository.findAll();
+
+        // 현재 날짜 가져오기
+        LocalDate playDate = LocalDate.now();
+
+        // 날짜 포맷 지정 (yyyyMMdd 형식으로)
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMdd");
+        String playDateStr = playDate.format(formatter);
+
+        for (Cinema cinema : cinemaList ) {
+            CloseableHttpClient httpClient = HttpClients.createDefault();
+
+            // URL 설정
+            String url = "https://www.kobis.or.kr/kobis/business/mast/thea/findSchedule.do";
+
+            // POST 요청 생성
+            HttpPost httpPost = new HttpPost(url);
+            String cinemaNo = cinema.getCode();
+
+            // 쿼리 파람 추가
+            List<NameValuePair> params = new ArrayList<>();
+            params.add(new BasicNameValuePair("theaCd", cinemaNo));
+            params.add(new BasicNameValuePair("showDt", playDateStr));
+
+            // POST 요청 엔티티에 설정
+            httpPost.setEntity(new UrlEncodedFormEntity(params));
+
+            // 요청 보내기
+            CloseableHttpResponse response = httpClient.execute(httpPost);
+
+            // 응답 받기
+            org.apache.http.HttpEntity responseEntity = response.getEntity();
+            String responseString = EntityUtils.toString(responseEntity);
+
+            // Gson을 사용하여 JSON 파싱
+            Gson gson = new Gson();
+            TheaterSchedule theaterSchedule;
+            try {
+                theaterSchedule = gson.fromJson(responseString, TheaterSchedule.class);
+            } catch (Exception e) {
+                log.error("Json Cinema:{}", cinema.getCinemaId());
+                continue;
+            }
+
+            // RunningTime에 필요한 정보 추출
+            List<TheaterSchedule.MovieSchedule> schedules = theaterSchedule.getSchedule();
+            for (TheaterSchedule.MovieSchedule schedule : schedules) {
+                String scrnNm = schedule.getScrnNm();
+                String movieNm = schedule.getMovieNm();
+                String showTm = schedule.getShowTm();
+                String movieCd = schedule.getMovieCd();
+
+                String[] showTmArr = showTm.split(",");
+
+                for (String startTm : showTmArr) {
+                    RunningTime runningTime = new RunningTime();
+
+                    int startHour = Integer.parseInt(startTm.substring(0, 2));
+                    int startMinute = Integer.parseInt(startTm.substring(3));
+
+                    LocalTime startTime;
+
+                    if (startHour >= 24) {
+                        int tomorrowStartHour = startHour - 24;
+                        startTime = LocalTime.of(tomorrowStartHour, startMinute);
+                    } else {
+                        startTime = LocalTime.of(startHour, startMinute);
+                    }
+
+                    runningTime.setStartTime(LocalDateTime.of(playDate, startTime));
+                    runningTime.setCinema(cinema);
+                    runningTime.setScreenInfo(scrnNm);
+
+                    if (!runningTimeRepository.findRunningTimeCinemaAndStartTimeAndScreenInfo(cinema, runningTime.getStartTime(), scrnNm).isPresent()) {
+                        Movie movie = new Movie();
+                        Optional<Movie> optionalMovie = movieRepository.findByName(movieNm);
+                        if (optionalMovie.isPresent()) {
+                            movie = optionalMovie.get();
+
+                            // 영화 객체에 빠진 부분이 없으면 다시 크롤링
+                            // 다시 크롤링 해도 없는 경우가 있으므로 금일 크롤링을 진행 했다면 더이상 안하게 함
+                            movie = reCrawlMovieInfo(playDate, httpClient, gson, movieNm, movieCd, movie);
+                        } else {
+                            movie = crawlMovieInfo(httpClient, gson, movieNm, movieCd, movie);
+
+                        }
+                        movie.setLastAddedAt(playDate);
+                        movie = movieRepository.save(movie);
+                        runningTime.setMovie(movie);
+                        showTm = movie.getShowTm();
+                        try {
+                            if (showTm != null && !showTm.isEmpty()) {
+                                runningTime.setEndTime(runningTime.getStartTime().plusMinutes(Long.parseLong(showTm) + 10L));
+                            }
+                        } catch (NumberFormatException e) {
+                            log.error("Cinema: {} Movie: {}", cinema.getName(), movie.getName());
+                        }
+                        runningTimeRepository.save(runningTime);
+                    }
+                }
+            }
+        }
+    }
+
+
+    private Movie reCrawlMovieInfo(LocalDate playDate, CloseableHttpClient httpClient, Gson gson, String movieNm, String movieCd, Movie movie) throws IOException {
+        if (!movie.getLastAddedAt().equals(playDate)) {
+            log.info("MovieReload: {}", movie.getName());
+            movie.setGenre(null);
+            movie.setCountry(null);
+            movie = crawlMovieInfo(httpClient, gson, movieNm, movieCd, movie);
+        }
+        return movie;
+    }
+
+    @NotNull
+    private Movie crawlMovieInfo(CloseableHttpClient httpClient, Gson gson, String movieNm, String movieCd, Movie movie) throws IOException {
+        HttpPost httpPost;
+        CloseableHttpResponse response;
+        String url;
+        String movieInfoUrl = UriComponentsBuilder.fromUriString("http://www.kobis.or.kr/kobisopenapi/webservice/rest/movie/searchMovieInfo.json")
+                .queryParam("key", KEY)
+                .queryParam("movieCd", movieCd).build().toString();
+
+        HttpGet httpGet = new HttpGet(movieInfoUrl);
+
+        // 요청 보내기
+        CloseableHttpResponse movieResponse = httpClient.execute(httpGet);
+
+        // 응답 받기
+        org.apache.http.HttpEntity movieResponseEntity = movieResponse.getEntity();
+        String movieResponseString = EntityUtils.toString(movieResponseEntity);
+
+        // Gson을 사용하여 JSON 파싱
+        MovieInfoResultResponse movieInfoResultResponse = gson.fromJson(movieResponseString, MovieInfoResultResponse.class);
+
+        MovieInfoResultResponse.MovieInfo movieInfo = movieInfoResultResponse.getMovieInfoResult().getMovieInfo();
+
+        String movieShowTm = movieInfo.getShowTm();
+        String openDt = movieInfo.getOpenDt();
+        String movieNmEn = movieInfo.getMovieNmEn();
+        List<MovieInfoResultResponse.Nation> nations = movieInfo.getNations();
+        List<MovieInfoResultResponse.Genre> genres = movieInfo.getGenres();
+        List<MovieInfoResultResponse.Audit> audits = movieInfo.getAudits();
+
+        movie.setName(movieNm);
+        movie.setEnName(movieNmEn);
+        // 개봉일 추가
+        movie.setShowTm(movieShowTm);
+        movie.setReleaseDate(openDt);
+        movie.setMovieCode(movieCd);
+
+        // 국가 추가
+        for (MovieInfoResultResponse.Nation nation : nations) {
+            movie.addCountry(nation.getNationNm());
+        }
+        // 장르 추가
+        for (MovieInfoResultResponse.Genre genre : genres) {
+            movie.addGenre(genre.getGenreNm());
+        }
+        // 관람 제한 연령 추가
+        for (MovieInfoResultResponse.Audit audit : audits) {
+            movie.setMovieRating(audit.getWatchGradeNm());
+        }
+
+        url = "https://www.kobis.or.kr/kobis/business/mast/mvie/searchMovieDtl.do";
+        httpPost = new HttpPost(url);
+
+        // form-data 생성
+        List<BasicNameValuePair> formParams = new ArrayList<>();
+        formParams.add(new BasicNameValuePair("code", movieCd));
+        formParams.add(new BasicNameValuePair("titleYN", "Y"));
+
+        // UrlEncodedFormEntity로 form-data 설정
+        UrlEncodedFormEntity formEntity = new UrlEncodedFormEntity(formParams, "UTF-8");
+        httpPost.setEntity(formEntity);
+
+        // 요청 보내기
+        response = httpClient.execute(httpPost);
+
+        // 응답을 파싱하고 Document로 변환
+        String responseBody = EntityUtils.toString(response.getEntity(), "UTF-8");
+        Document doc = Jsoup.parse(responseBody);
+
+        Element imgElement = doc.select("a.fl.thumb img").first();
+
+        String srcValue = null;
+        if (imgElement != null) {
+            // "src" 속성의 값을 가져옴
+            srcValue = imgElement.attr("src");
+            log.info("src 값: " + srcValue);
+        } else {
+            log.error("class 'fl thumb'를 가진 <a> 요소 내의 <img> 태그를 찾을 수 없습니다.");
+        }
+
+        movie.setThumbnailUrl(IMAGE_URL + srcValue);
+
+        Element pElement = doc.select("p.desc_info").first();
+        String pElementText = null;
+
+        if (pElement != null) {
+            pElementText = pElement.text();
+        }
+
+        movie.setInfo(pElementText);
+        return movie;
+    }
+
+    // kakao Api를 통한 x, y(위도, 경도) 설정 메서드
+    public void crawlCinemaXY() {
+        List<Cinema> cinemaList = cinemaRepository.findAll();
+
+        for (Cinema cinema : cinemaList) {
+            String uri = "https://dapi.kakao.com/v2/local/search/address.json";
+
+            RestTemplate restTemplate = new RestTemplate();
+            String apiKey = "KakaoAK " + KAKAOKEY;
+            String address = cinema.getAddress();
+
+            // 요청 헤더에 만들기, Authorization 헤더 설정하기
+            HttpHeaders httpHeaders = new HttpHeaders();
+            httpHeaders.set("Authorization", apiKey);
+            HttpEntity<String> entity = new HttpEntity<>(httpHeaders);
+
+            UriComponents uriComponents = UriComponentsBuilder
+                    .fromHttpUrl(uri)
+                    .queryParam("query",address)
+                    .build();
+
+            ResponseEntity<String> response = restTemplate.exchange(uriComponents.toString(), HttpMethod.GET, entity, String.class);
+
+            // API Response로부터 body 가져오기
+            String body = response.getBody();
+            JSONObject json = new JSONObject(body);
+            // body에서 좌표 가져오기
+            JSONArray documents = json.getJSONArray("documents");
+            double x = documents.getJSONObject(0).getDouble("x");
+            double y = documents.getJSONObject(0).getDouble("y");
+
+            cinema.setXY(x, y);
+
+            cinemaRepository.save(cinema);
+        }
+    }
+}

@@ -37,11 +37,4 @@ public class ChatDto {
         private String lastMessage;
         private LocalDateTime lastMessageAt;
     }
-
-    @Getter
-    @Setter
-    public static class EnterExit {
-        private String sender;
-        private String content;
-    }
 }
