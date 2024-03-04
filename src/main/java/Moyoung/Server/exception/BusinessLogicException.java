@@ -13,10 +13,6 @@ public class BusinessLogicException extends RuntimeException {
 
 
     private String message;
-    public BusinessLogicException(ExceptionCode exceptionCode, String message) {
-        this.exceptionCode = exceptionCode;
-        this.message = message;
-    }
 
     public ExceptionCode getCode() {
         return exceptionCode;

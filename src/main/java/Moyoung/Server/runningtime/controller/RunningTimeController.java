@@ -1,6 +1,5 @@
 package Moyoung.Server.runningtime.controller;
 
-import Moyoung.Server.auth.interceptor.JwtParseInterceptor;
 import Moyoung.Server.runningtime.entity.RunningTime;
 import Moyoung.Server.runningtime.mapper.RunningTimeMapper;
 import Moyoung.Server.runningtime.service.RunningTimeService;

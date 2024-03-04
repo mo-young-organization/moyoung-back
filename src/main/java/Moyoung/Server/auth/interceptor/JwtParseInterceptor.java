@@ -30,7 +30,6 @@ public class JwtParseInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         try {
-//            if (request.getMethod().equals("GET")) return  true;
             String authorizationHeader = request.getHeader("Authorization");
             if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
                 // 유효하지 않은 토큰 처리
@@ -57,10 +56,5 @@ public class JwtParseInterceptor implements HandlerInterceptor {
             ErrorResponder.sendErrorResponse(response, HttpStatus.UNAUTHORIZED);
             return false;
         }
-    }
-
-    @Override
-    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, @Nullable ModelAndView modelAndView) throws Exception {
-        authenticatedMemberId.remove();
     }
 }

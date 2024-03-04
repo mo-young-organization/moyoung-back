@@ -54,12 +54,4 @@ public class MemberDto {
         private String displayName;
         private String age;
     }
-
-
-
-    @Getter
-    @Setter
-    public static class MemberId {
-        private long memberId;
-    }
 }
