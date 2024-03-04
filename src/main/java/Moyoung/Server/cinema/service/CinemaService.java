@@ -72,7 +72,7 @@ public class CinemaService {
                 }
             }
 
-            if (screenInfoList.size() != 0) {
+            if (!screenInfoList.isEmpty()) {
                 cinemaPlus.setScreenInfoList(screenInfoList);
                 cinemaPlusList.add(cinemaPlus);
             }
