@@ -5,11 +5,13 @@ import Moyoung.Server.cinema.entity.CinemaPlus;
 import Moyoung.Server.cinema.repository.CinemaRepository;
 import Moyoung.Server.movie.entity.Movie;
 import Moyoung.Server.runningtime.entity.RunningTime;
+import Moyoung.Server.runningtime.repository.RunningTimeRepository;
 import Moyoung.Server.runningtime.service.RunningTimeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -19,7 +21,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class CinemaService {
     private final CinemaRepository cinemaRepository;
-    private final RunningTimeService runningTimeService;
+    private final RunningTimeRepository runningTimeRepository;
 
     public List<CinemaPlus> find(double x, double y, double distance, boolean mega, boolean lotte, boolean cgv, Movie movie, LocalDate date) {
         List<CinemaPlus> cinemaPlusList = new ArrayList<>();
@@ -47,7 +49,7 @@ public class CinemaService {
 
             List<CinemaPlus.ScreenInfo> screenInfoList = new ArrayList<>();
 
-            List<RunningTime> runningTimeList = runningTimeService.find(cinema, movie, date);
+            List<RunningTime> runningTimeList = find(cinema, movie, date);
 
             for (RunningTime runningTime : runningTimeList) {
                 boolean found = false;
@@ -83,5 +85,12 @@ public class CinemaService {
 
     public List<Cinema> findCinemaList(double x, double y, double distance) {
         return cinemaRepository.findCinemasByWithinDistance(x, y, distance);
+    }
+
+    private List<RunningTime> find(Cinema cinema, Movie movie, LocalDate date) {
+        LocalDateTime startOfDate = date.atStartOfDay();
+        LocalDateTime endOfDate = date.atTime(23, 59, 59);
+
+        return runningTimeRepository.findRunningTimesByCinemaAndMovieAndStartTimeBetween(cinema, movie, startOfDate, endOfDate);
     }
 }

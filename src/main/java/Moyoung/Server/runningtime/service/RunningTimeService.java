@@ -21,13 +21,6 @@ import java.util.stream.Collectors;
 public class RunningTimeService {
     private final RunningTimeRepository runningTimeRepository;
 
-    public List<RunningTime> find(Cinema cinema, Movie movie, LocalDate date) {
-        LocalDateTime startOfDate = date.atStartOfDay();
-        LocalDateTime endOfDate = date.atTime(23, 59, 59);
-
-        return runningTimeRepository.findRunningTimesByCinemaAndMovieAndStartTimeBetween(cinema, movie, startOfDate, endOfDate);
-    }
-
     public RunningTime findVerifiedRunningTime(long runningTimeId) {
         Optional<RunningTime> optionalRunningTime = runningTimeRepository.findById(runningTimeId);
         RunningTime runningTime = optionalRunningTime.orElseThrow(() ->
